@@ -31,6 +31,7 @@ class Order:
     notional: float
     target_weight: float
     reason: str
+    source_amount: float | None = None
 
 
 @dataclass

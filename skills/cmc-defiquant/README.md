@@ -1,8 +1,10 @@
-# CMC defiQuant Skill Draft
+# CMC defiQuant Skill
 
-This directory is a placeholder package for Track 2. The exact CMC Agent Hub Skill schema must be checked manually because the DoraHacks page is protected by CAPTCHA from automated access.
+This directory is the Track 2 Skill package for the CMC Agent Hub / Strategy
+Skills submission.
 
-DoraHacks supports adding the second track through the Add option, so this package should be prepared alongside the Track 1 live-trading agent.
+DoraHacks supports adding the second track through the Add option, so this
+package is prepared alongside the Track 1 live-trading agent.
 
 Expected behavior:
 
@@ -14,5 +16,9 @@ Expected behavior:
 Local command:
 
 ```powershell
-uv run defiquant signal --fixture --config configs/strategy.json
+uv run defiquant signal --config configs/strategy.json --cmc-days 90
+uv run defiquant backtest --config configs/strategy.json --cmc-days 90 --cmc-end-date 2026-06-12
 ```
+
+The executable skill instructions are in [SKILL.md](SKILL.md). The JSON package
+metadata is in [skill.json](skill.json).

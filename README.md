@@ -26,10 +26,22 @@ Generate the latest target weights from fixture data:
 uv run defiquant signal --fixture --config configs/strategy.json
 ```
 
+Run the same flow with live CoinMarketCap OHLCV data:
+
+```powershell
+$env:CMC_API_KEY="your-cmc-api-key"
+uv run defiquant signal --config configs/strategy.json --cmc-days 90
+uv run defiquant backtest --config configs/strategy.json --cmc-days 90 --cmc-end-date 2026-06-12
+```
+
+When `--fixture` is omitted, the CLI requests daily CMC OHLCV candles for the configured
+universe. By default it ends at the last complete UTC day; use `--cmc-end-date YYYY-MM-DD`
+for reproducible submission evidence.
+
 Dry-run a TWAK execution plan:
 
 ```powershell
-uv run defiquant execute --fixture --config configs/strategy.json --adapter twak --dry-run
+uv run defiquant execute --config configs/strategy.json --cmc-days 90 --adapter twak --dry-run
 ```
 
 Run the full local check:
@@ -54,6 +66,8 @@ Run the full local check:
 - `src/defiquant/data/cmc.py`: CMC API client and response parser.
 - `src/defiquant/execution/`: paper and TWAK CLI execution adapters.
 - `skills/cmc-defiquant/`: draft CMC Skill package metadata.
+- `configs/mcp/`: CMC MCP, CMC x402 MCP, and TWAK MCP client templates.
+- `docs/agent_integrations.md`: end-to-end integration runbook.
 
 ## Toolchain
 
@@ -86,7 +100,7 @@ Weights are inverse-volatility adjusted, capped per asset, and forced to keep a 
 - The default universe intentionally excludes native `BNB`, `XVS`, and `BAKE` because they are not present in the copied eligible list.
 - The agent must trade at least once per day over the 7-day trading week.
 - A wallet with $1 or less at the start of an hourly measurement is treated as having no capital at work for that hour.
-- Drawdown is a hard risk gate; the local default is 25%, below the example 30% disqualification threshold.
+- Drawdown is a hard risk gate; the local default is 20%, below the example 30% disqualification threshold.
 
 ## Hackathon Work Plan
 
@@ -105,3 +119,29 @@ Weights are inverse-volatility adjusted, capped per asset, and forced to keep a 
 - Backtest output reports whether the strategy meets the minimum 7 qualified trade days.
 - Per-position caps and a minimum cash reserve are enforced after every signal.
 - All execution adapters consume the same target-weight payload produced by the shared strategy.
+
+## Full Integration Commands
+
+Preview the Track 1 registration command:
+
+```powershell
+uv run defiquant register-track1 --dry-run
+```
+
+Build the shared agent profile used for DoraHacks and BNB Agent SDK identity:
+
+```powershell
+uv run defiquant profile --config configs/strategy.json --agent-url https://example.com --wallet-address 0x...
+```
+
+Preview BNB Agent SDK ERC-8004 registration metadata:
+
+```powershell
+uv run defiquant bnb-register --config configs/strategy.json --agent-url https://example.com --wallet-address 0x... --dry-run
+```
+
+MCP templates:
+
+- `configs/mcp/cmc-mcp.json`: CMC Agent Hub with API key.
+- `configs/mcp/cmc-x402.json`: CMC Agent Hub through x402 pay-per-call.
+- `configs/mcp/twak.json`: TWAK MCP server through `twak serve`.

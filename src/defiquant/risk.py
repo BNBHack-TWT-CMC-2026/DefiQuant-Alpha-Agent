@@ -79,8 +79,16 @@ class RiskManager:
                 continue
             turnover += abs(delta_weight)
             side = "buy" if delta_weight > 0 else "sell"
+            source_amount = notional if side == "buy" else notional / prices[symbol]
             orders.append(
-                Order(symbol, side, notional, target_weights.get(symbol, 0.0), "rebalance")
+                Order(
+                    symbol,
+                    side,
+                    notional,
+                    target_weights.get(symbol, 0.0),
+                    "rebalance",
+                    source_amount,
+                )
             )
 
         if turnover > self.config.max_daily_turnover and turnover > 0:
@@ -92,6 +100,7 @@ class RiskManager:
                     order.notional * scale,
                     order.target_weight,
                     "turnover_scaled",
+                    order.source_amount * scale if order.source_amount is not None else None,
                 )
                 for order in orders
             ]

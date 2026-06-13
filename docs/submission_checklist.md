@@ -19,9 +19,13 @@
 ## Demo Evidence
 
 - Show CMC data flowing into the strategy.
+- Show CMC Agent Hub MCP configuration from `configs/mcp/cmc-mcp.json`.
+- Show CMC x402 MCP configuration from `configs/mcp/cmc-x402.json` if the wallet/client is funded.
 - Show TWAK as the execution/signing layer.
+- Show TWAK MCP configuration from `configs/mcp/twak.json`.
 - Show autonomous guardrails: allowlist, per-position cap, turnover cap, slippage settings, and drawdown circuit breaker.
 - Show dry-run/testnet rehearsal before any mainnet live loop.
+- Show BNB Agent SDK ERC-8004 identity preview or registration output.
 
 ## Repo Evidence
 
@@ -33,6 +37,16 @@
 ## Track 2 Must-Haves
 
 - CMC Skill package under `skills/cmc-defiquant`.
+- Executable Skill instructions in `skills/cmc-defiquant/SKILL.md`.
 - Backtestable strategy spec with no execution path.
 - Strategy rationale and risk limits documented.
 - Demo or walkthrough showing CMC data to target weights.
+
+## Integration Must-Haves
+
+- CMC REST API for deterministic OHLCV backtests.
+- CMC MCP for agent-ready read-only market context.
+- CMC x402 MCP demo path with spend limits.
+- TWAK CLI for `twak swap` execution plans.
+- TWAK `compete register` registration path before the Track 1 deadline.
+- BNB Agent SDK ERC-8004 identity path for discoverability.

@@ -1,0 +1,7 @@
+{
+  "mcpServers": {
+    "cmc-x402": {
+      "url": "https://mcp.coinmarketcap.com/x402/mcp"
+    }
+  }
+}

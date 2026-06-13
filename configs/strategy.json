@@ -8,10 +8,10 @@
     "stable_symbol": "USDT"
   },
   "risk": {
-    "max_drawdown": 0.25,
-    "max_position_weight": 0.18,
-    "min_cash_weight": 0.12,
-    "max_daily_turnover": 0.45,
+    "max_drawdown": 0.2,
+    "max_position_weight": 0.1,
+    "min_cash_weight": 0.3,
+    "max_daily_turnover": 0.25,
     "fee_bps": 15,
     "slippage_bps": 20
   },
