@@ -17,6 +17,8 @@ class BacktestResult:
     max_drawdown: float
     sharpe: float
     trades: int
+    qualified_trade_days: int
+    meets_min_trade_days: bool
     equity_curve: tuple[float, ...]
 
 
@@ -26,10 +28,14 @@ class Backtester:
         strategy: MomentumLiquidityStrategy,
         risk: RiskManager,
         config: BacktestConfig,
+        min_trades_per_day: int = 1,
+        min_total_trade_days: int = 7,
     ) -> None:
         self.strategy = strategy
         self.risk = risk
         self.config = config
+        self.min_trades_per_day = min_trades_per_day
+        self.min_total_trade_days = min_total_trade_days
 
     def run(self, market: MarketData) -> BacktestResult:
         timestamps = sorted({candle.timestamp for candles in market.values() for candle in candles})
@@ -42,6 +48,7 @@ class Backtester:
         )
         equity_curve: list[float] = []
         trades = 0
+        trades_by_day: dict[str, int] = {}
         for index, timestamp in enumerate(timestamps):
             available = {
                 symbol: [candle for candle in candles if candle.timestamp <= timestamp]
@@ -61,6 +68,8 @@ class Backtester:
             signals = self.risk.apply(raw, portfolio, prices)
             orders = self.risk.build_orders(signals, portfolio, prices)
             trades += len(orders)
+            day_key = timestamp.date().isoformat()
+            trades_by_day[day_key] = trades_by_day.get(day_key, 0) + len(orders)
             _execute_orders(
                 portfolio,
                 orders,
@@ -76,6 +85,9 @@ class Backtester:
         }
         final_value = portfolio.value(final_prices)
         initial = self.config.initial_cash
+        qualified_trade_days = sum(
+            1 for day_trades in trades_by_day.values() if day_trades >= self.min_trades_per_day
+        )
         return BacktestResult(
             initial_value=initial,
             final_value=final_value,
@@ -83,6 +95,8 @@ class Backtester:
             max_drawdown=max_drawdown(equity_curve),
             sharpe=sharpe_daily(equity_curve),
             trades=trades,
+            qualified_trade_days=qualified_trade_days,
+            meets_min_trade_days=qualified_trade_days >= self.min_total_trade_days,
             equity_curve=tuple(equity_curve),
         )
 

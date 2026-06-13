@@ -5,6 +5,8 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
+from defiquant.competition import load_eligible_symbols, validate_universe
+
 
 @dataclass(frozen=True)
 class StrategyConfig:
@@ -33,20 +35,54 @@ class BacktestConfig:
 
 
 @dataclass(frozen=True)
+class CompetitionConfig:
+    eligible_tokens_path: Path
+    registration_deadline_utc: str
+    track2_submission_deadline_utc: str
+    live_trading_start_utc: str
+    live_trading_end_utc: str
+    min_trades_per_day: int
+    min_total_trade_days: int
+    min_starting_in_scope_value_usd: float
+
+
+@dataclass(frozen=True)
 class AppConfig:
     strategy: StrategyConfig
     risk: RiskConfig
     backtest: BacktestConfig
+    competition: CompetitionConfig
     universe_symbols: tuple[str, ...]
+    eligible_symbols: frozenset[str]
 
 
 def load_config(path: str | Path) -> AppConfig:
-    raw = json.loads(Path(path).read_text(encoding="utf-8"))
+    config_path = Path(path)
+    raw = json.loads(config_path.read_text(encoding="utf-8"))
+    competition_raw = raw["competition"]
+    eligible_path = config_path.parent / competition_raw["eligible_tokens_path"]
+    eligible_symbols = load_eligible_symbols(eligible_path)
+    universe_symbols = tuple(raw["universe"]["symbols"])
+    validate_universe(universe_symbols, eligible_symbols)
+    stable_symbol = raw["strategy"]["stable_symbol"]
+    validate_universe((stable_symbol,), eligible_symbols, label="stable_symbol")
+
     return AppConfig(
         strategy=StrategyConfig(**raw["strategy"]),
         risk=RiskConfig(**raw["risk"]),
         backtest=BacktestConfig(**raw["backtest"]),
-        universe_symbols=tuple(raw["universe"]["symbols"]),
+        competition=CompetitionConfig(
+            eligible_tokens_path=eligible_path,
+            registration_deadline_utc=competition_raw["registration_deadline_utc"],
+            track2_submission_deadline_utc=competition_raw["track2_submission_deadline_utc"],
+            live_trading_start_utc=competition_raw["live_trading_start_utc"],
+            live_trading_end_utc=competition_raw["live_trading_end_utc"],
+            min_trades_per_day=competition_raw["min_trades_per_day"],
+            min_total_trade_days=competition_raw["min_total_trade_days"],
+            min_starting_in_scope_value_usd=competition_raw["min_starting_in_scope_value_usd"],
+        ),
+        universe_symbols=universe_symbols,
+        eligible_symbols=eligible_symbols,
     )
 
 
@@ -59,4 +95,8 @@ def to_jsonable(value: Any) -> Any:
         return [to_jsonable(item) for item in value]
     if isinstance(value, dict):
         return {key: to_jsonable(item) for key, item in value.items()}
+    if isinstance(value, set | frozenset):
+        return sorted(value)
+    if isinstance(value, Path):
+        return str(value)
     return value

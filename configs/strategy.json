@@ -19,8 +19,17 @@
     "initial_cash": 10000,
     "rebalance_every_days": 1
   },
+  "competition": {
+    "eligible_tokens_path": "eligible_tokens.json",
+    "registration_deadline_utc": "2026-06-22T00:00:00Z",
+    "track2_submission_deadline_utc": "2026-06-21T23:59:59Z",
+    "live_trading_start_utc": "2026-06-22T00:00:00Z",
+    "live_trading_end_utc": "2026-06-28T23:59:59Z",
+    "min_trades_per_day": 1,
+    "min_total_trade_days": 7,
+    "min_starting_in_scope_value_usd": 1.01
+  },
   "universe": {
-    "symbols": ["BNB", "CAKE", "TWT", "XVS", "BAKE", "USDT"]
+    "symbols": ["CAKE", "TWT", "AAVE", "LINK", "PENDLE", "USDT"]
   }
 }
-

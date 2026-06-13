@@ -39,7 +39,13 @@ def main() -> None:
     risk = RiskManager(config.risk, config.strategy.stable_symbol)
 
     if args.command == "backtest":
-        result = Backtester(strategy, risk, config.backtest).run(market)
+        result = Backtester(
+            strategy,
+            risk,
+            config.backtest,
+            min_trades_per_day=config.competition.min_trades_per_day,
+            min_total_trade_days=config.competition.min_total_trade_days,
+        ).run(market)
         print(json.dumps(to_jsonable(result), indent=2))
         return
 

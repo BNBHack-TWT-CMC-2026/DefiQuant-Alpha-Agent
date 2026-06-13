@@ -21,3 +21,5 @@ def test_fixture_backtest_runs() -> None:
     assert result.final_value > 0
     assert len(result.equity_curve) > 10
     assert result.max_drawdown <= 1.0
+    assert result.qualified_trade_days >= config.competition.min_total_trade_days
+    assert result.meets_min_trade_days
