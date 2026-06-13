@@ -1,0 +1,49 @@
+[build-system]
+requires = ["uv_build>=0.11.21,<0.12"]
+build-backend = "uv_build"
+
+[project]
+name = "defiquant"
+version = "0.1.0"
+description = "Hackathon trading strategy engine for CMC strategy submission and BSC execution adapters."
+readme = "README.md"
+requires-python = ">=3.14,<3.15"
+license = { text = "MIT" }
+authors = [{ name = "defiQuant" }]
+dependencies = []
+
+[project.scripts]
+defiquant = "defiquant.cli:main"
+
+[dependency-groups]
+dev = [
+  "pytest>=8.4.0",
+  "ruff>=0.13.0",
+  "ty",
+]
+
+[tool.pytest.ini_options]
+addopts = "-q"
+pythonpath = ["src"]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+src = ["src", "tests"]
+target-version = "py314"
+
+[tool.ruff.lint]
+select = ["B", "E", "F", "I", "RUF", "SIM", "UP"]
+
+[tool.ruff.format]
+line-ending = "lf"
+
+[tool.ty.environment]
+python-version = "3.14"
+root = ["./src"]
+
+[tool.ty.src]
+include = ["src", "tests"]
+
+[tool.ty.terminal]
+output-format = "concise"

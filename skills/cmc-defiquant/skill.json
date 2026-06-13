@@ -1,0 +1,19 @@
+{
+  "name": "defiquant-momentum-liquidity-risk",
+  "version": "0.1.0",
+  "description": "CMC-driven BNB Chain token rotation strategy with drawdown-aware risk controls.",
+  "entrypoint": {
+    "command": "python",
+    "args": ["-m", "defiquant.cli", "signal", "--config", "configs/strategy.json"]
+  },
+  "inputs": {
+    "universe": "CMC-listed BNB Chain token symbols",
+    "ohlcv": "Historical OHLCV candles"
+  },
+  "outputs": {
+    "signals": "Target weights with score rationale",
+    "risk": "Cash reserve and drawdown guardrail state"
+  },
+  "execution": "disabled"
+}
+
