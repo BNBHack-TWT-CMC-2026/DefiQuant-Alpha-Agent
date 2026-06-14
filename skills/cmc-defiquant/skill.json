@@ -17,6 +17,7 @@
     "signals": "Target weights with score rationale",
     "risk": "Cash reserve and drawdown guardrail state"
   },
+  "execution": "disabled",
   "examples": {
     "input": "examples/input.fixture.json",
     "output": "examples/output.fixture.json"

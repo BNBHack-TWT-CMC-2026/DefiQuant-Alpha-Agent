@@ -11,6 +11,7 @@ def test_cmc_skill_manifest_points_to_examples() -> None:
 
     assert manifest["name"] == "defiquant-momentum-liquidity-risk"
     assert manifest["track"] == "coinmarketcap-skill"
+    assert manifest["execution"] == "disabled"
     assert manifest["entrypoint"]["args"][:3] == ["-m", "defiquant.cli", "signal"]
     assert manifest["examples"] == {
         "input": "examples/input.fixture.json",
