@@ -1,0 +1,35 @@
+{
+  "network": "bsc-mainnet",
+  "funding_policy": {
+    "hard_stop": true,
+    "minimum_in_scope_value_usd": 1.01,
+    "recommended_initial_capital_usd": 5.0,
+    "maximum_initial_capital_without_new_approval_usd": 10.0
+  },
+  "live_notional_caps_usd": {
+    "smoke": 1.0,
+    "default": 2.5,
+    "maximum_without_new_approval": 5.0
+  },
+  "daily_trade_requirement": {
+    "window_start_utc": "2026-06-22T00:00:00Z",
+    "window_end_utc": "2026-06-28T23:59:59Z",
+    "minimum_trades_per_day": 1,
+    "minimum_total_trade_days": 7
+  },
+  "halt_criteria": [
+    "TWAK auth or wallet read fails",
+    "CMC data loading fails or returns stale candles",
+    "Quote validation fails for any planned order",
+    "Planned order or batch exceeds the approved live notional cap",
+    "Strategy emits a token outside configs/eligible_tokens.json",
+    "Drawdown reaches the configured risk gate",
+    "Unexpected mainnet transaction output or missing tx hash"
+  ],
+  "evidence_layout": {
+    "root": "artifacts/track1-live/",
+    "registration": "artifacts/track1-live/registration/",
+    "daily": "artifacts/track1-live/YYYY-MM-DD/",
+    "do_not_commit": true
+  }
+}

@@ -152,3 +152,9 @@ MCP templates:
 - `configs/mcp/cmc-mcp.json`: CMC Agent Hub with API key.
 - `configs/mcp/cmc-x402.json`: CMC Agent Hub through x402 pay-per-call.
 - `configs/mcp/twak.json`: TWAK MCP server through `twak serve`.
+
+Track 1 operations:
+
+- `docs/track1_registration.md`: registration preflight and evidence capture.
+- `docs/track1_live_operations.md`: live-window operating loop and halt criteria.
+- `configs/live_operations.json`: funding and live notional cap presets.

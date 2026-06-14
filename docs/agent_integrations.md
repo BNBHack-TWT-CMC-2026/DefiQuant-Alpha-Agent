@@ -94,6 +94,10 @@ command is safe to run in dry-run mode and read-only mode. The final
 `register-track1 --live` command is an irreversible external registration and
 must not be run without explicit approval in the current thread.
 
+Use `docs/track1_live_operations.md` and `configs/live_operations.json` for the
+post-registration funding policy, live notional caps, daily trade loop, halt
+criteria, and local evidence archive layout.
+
 Store the BSC agent wallet address, registration transaction hash, and later
 representative trade transaction hashes in the DoraHacks submission.
 

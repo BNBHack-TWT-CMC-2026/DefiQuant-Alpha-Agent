@@ -16,6 +16,7 @@
 - Keep realized and mark-to-market drawdown below the risk gate.
 - Capture on-chain proof: BSC address, registration tx, and representative trade tx hashes.
 - Run `uv run defiquant track1-preflight --run-read-only` before requesting approval for live registration.
+- Use `docs/track1_live_operations.md` and `configs/live_operations.json` before funding or live trading.
 
 ## Demo Evidence
 
@@ -25,6 +26,7 @@
 - Show TWAK as the execution/signing layer.
 - Show TWAK MCP configuration from `configs/mcp/twak.json`.
 - Show autonomous guardrails: allowlist, per-position cap, turnover cap, slippage settings, and drawdown circuit breaker.
+- Show live operations guardrails: funding hard stop, approved notional cap, halt criteria, and ignored evidence archive layout.
 - Show dry-run/testnet rehearsal before any mainnet live loop.
 - Show BNB Agent SDK ERC-8004 identity preview or registration output.
 
