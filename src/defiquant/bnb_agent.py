@@ -40,6 +40,7 @@ def register_bnb_agent(
     wallet_address: str = "",
     network: str | None = None,
 ) -> dict[str, Any]:
+    wallet_password, private_key = _bnb_agent_live_credentials()
     try:
         bnbagent = import_module("bnbagent")
     except ImportError as exc:
@@ -48,8 +49,8 @@ def register_bnb_agent(
         ) from exc
 
     wallet = bnbagent.EVMWalletProvider(
-        password=env_value("WALLET_PASSWORD"),
-        private_key=env_value("PRIVATE_KEY"),
+        password=wallet_password,
+        private_key=private_key,
     )
     sdk = bnbagent.ERC8004Agent(
         network=_bnb_agent_network(network),
@@ -79,3 +80,21 @@ def register_bnb_agent(
 
 def _bnb_agent_network(network: str | None) -> str:
     return network or env_value("NETWORK", DEFAULT_BNB_AGENT_NETWORK)
+
+
+def _bnb_agent_live_credentials() -> tuple[str, str]:
+    wallet_password = env_value("WALLET_PASSWORD")
+    private_key = env_value("PRIVATE_KEY")
+    missing = [
+        name
+        for name, value in (
+            ("WALLET_PASSWORD", wallet_password),
+            ("PRIVATE_KEY", private_key),
+        )
+        if not value
+    ]
+    if missing:
+        raise RuntimeError(
+            "BNB Agent SDK live registration requires environment variables: " + ", ".join(missing)
+        )
+    return wallet_password, private_key

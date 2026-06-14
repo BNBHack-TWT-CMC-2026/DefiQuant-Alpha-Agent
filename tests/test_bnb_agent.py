@@ -7,7 +7,7 @@ from typing import Any
 
 import pytest
 
-from defiquant.bnb_agent import preview_bnb_registration
+from defiquant.bnb_agent import preview_bnb_registration, register_bnb_agent
 from defiquant.cli import BNB_AGENT_REGISTRATION_CONFIRMATION_PHRASE, main
 from defiquant.config import load_config
 
@@ -93,6 +93,31 @@ def test_bnb_register_live_requires_confirmation_before_sdk(
     message = str(exc.value)
     assert "BNB Agent SDK live guard failed" in message
     assert BNB_AGENT_REGISTRATION_CONFIRMATION_PHRASE in message
+
+
+def test_bnb_live_registration_rejects_missing_credentials(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    def fake_env_value(name: str, default: str = "") -> str:
+        if name == "NETWORK":
+            return default
+        return ""
+
+    monkeypatch.setattr("defiquant.bnb_agent.env_value", fake_env_value)
+    config = load_config(Path("configs/strategy.json"))
+
+    with pytest.raises(RuntimeError) as exc:
+        register_bnb_agent(
+            config,
+            agent_url="https://agent.example",
+            wallet_address="0xabc",
+            network="bsc-testnet",
+        )
+
+    message = str(exc.value)
+    assert "WALLET_PASSWORD" in message
+    assert "PRIVATE_KEY" in message
+    assert "0xabc" not in message
 
 
 def test_bnb_agent_identity_config_keeps_live_registration_gated() -> None:
