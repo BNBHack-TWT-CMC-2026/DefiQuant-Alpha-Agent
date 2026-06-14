@@ -29,7 +29,7 @@
 - Show autonomous guardrails: allowlist, per-position cap, turnover cap, slippage settings, and drawdown circuit breaker.
 - Show live operations guardrails: funding hard stop, approved notional cap, halt criteria, and ignored evidence archive layout.
 - Show dry-run/testnet rehearsal before any mainnet live loop.
-- Show BNB Agent SDK ERC-8004 identity preview or registration output.
+- Show BNB Agent SDK ERC-8004 identity preview from `docs/bnb_agent_identity.md` and `configs/bnb_agent_identity.json`.
 
 ## Repo Evidence
 
@@ -59,4 +59,4 @@
 - TWAK quote-only validation for planned swaps before enabling live swap submission.
 - TWAK live swap guard requiring wallet portfolio, quote validation, explicit confirmation phrase, and max live notional cap.
 - TWAK `compete register` registration path before the Track 1 deadline.
-- BNB Agent SDK ERC-8004 identity path for discoverability.
+- BNB Agent SDK ERC-8004 identity path with dry-run evidence and live registration confirmation guard.

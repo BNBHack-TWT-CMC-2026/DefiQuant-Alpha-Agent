@@ -22,6 +22,7 @@ from defiquant.risk import RiskManager
 from defiquant.strategy import MomentumLiquidityStrategy
 
 LIVE_CONFIRMATION_PHRASE = "I_UNDERSTAND_TWAK_LIVE_SWAP_RISK"
+BNB_AGENT_REGISTRATION_CONFIRMATION_PHRASE = "I_UNDERSTAND_BNB_AGENT_REGISTRATION_RISK"
 
 
 def main() -> None:
@@ -78,6 +79,19 @@ def main() -> None:
     bnb_register.add_argument("--config", default="configs/strategy.json")
     bnb_register.add_argument("--agent-url", required=True)
     bnb_register.add_argument("--wallet-address", default="")
+    bnb_register.add_argument(
+        "--network",
+        default=None,
+        help="BNB Agent SDK network; defaults to NETWORK env var or bsc-testnet.",
+    )
+    bnb_register.add_argument(
+        "--confirm-live",
+        default="",
+        help=(
+            "Required for BNB Agent SDK live registration; must exactly match "
+            f"{BNB_AGENT_REGISTRATION_CONFIRMATION_PHRASE}."
+        ),
+    )
     _add_live_args(bnb_register)
 
     args = parser.parse_args()
@@ -107,17 +121,21 @@ def main() -> None:
         return
 
     if args.command == "bnb-register":
+        if not args.dry_run:
+            _validate_bnb_registration_live_args(args)
         result = (
             preview_bnb_registration(
                 config,
                 agent_url=args.agent_url,
                 wallet_address=args.wallet_address,
+                network=args.network,
             )
             if args.dry_run
             else register_bnb_agent(
                 config,
                 agent_url=args.agent_url,
                 wallet_address=args.wallet_address,
+                network=args.network,
             )
         )
         print(json.dumps(to_jsonable(result), indent=2))
@@ -415,6 +433,19 @@ def _twak_live_static_errors(args: argparse.Namespace) -> list[str]:
     if not isfinite(max_notional) or max_notional <= 0:
         errors.append("--live requires finite --max-live-notional-usd greater than 0")
     return errors
+
+
+def _validate_bnb_registration_live_args(args: argparse.Namespace) -> None:
+    errors: list[str] = []
+    if args.confirm_live != BNB_AGENT_REGISTRATION_CONFIRMATION_PHRASE:
+        errors.append(
+            f"--confirm-live must exactly match {BNB_AGENT_REGISTRATION_CONFIRMATION_PHRASE}"
+        )
+    if not args.wallet_address:
+        errors.append("--live requires --wallet-address for the submitted agent profile")
+
+    if errors:
+        raise SystemExit("BNB Agent SDK live guard failed:\n- " + "\n- ".join(errors))
 
 
 def _validate_twak_live_quotes(

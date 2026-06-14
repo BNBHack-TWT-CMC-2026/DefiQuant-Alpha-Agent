@@ -1,0 +1,26 @@
+{
+  "purpose": "BNB Agent SDK ERC-8004 identity dry-run and live-registration guardrails.",
+  "network_default": "bsc-testnet",
+  "agent_url_placeholder": "https://example.com",
+  "wallet_address_source": "Track 1 BSC wallet after registration and funding decision",
+  "dry_run_command": "uv run defiquant bnb-register --config configs/strategy.json --agent-url https://example.com --wallet-address 0x9206D8416A11c5E54427fE5f226B3Ed384a266Cc --network bsc-testnet --dry-run",
+  "live_registration": {
+    "hard_stop": true,
+    "approval_required_in_current_thread": true,
+    "command_reference_only": "uv run defiquant bnb-register --config configs/strategy.json --agent-url https://example.com --wallet-address 0x9206D8416A11c5E54427fE5f226B3Ed384a266Cc --network bsc-testnet --live --confirm-live I_UNDERSTAND_BNB_AGENT_REGISTRATION_RISK",
+    "secrets_required_for_live_only": [
+      "PRIVATE_KEY",
+      "WALLET_PASSWORD"
+    ],
+    "funding_required_for_live_only": true
+  },
+  "evidence_to_capture": [
+    "dry-run preview JSON",
+    "final agent URL",
+    "BSC wallet address",
+    "selected network",
+    "registration transaction hash after approved live registration",
+    "explorer link",
+    "DoraHacks submission screenshot or confirmation URL"
+  ]
+}

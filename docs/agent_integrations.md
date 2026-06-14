@@ -106,8 +106,19 @@ representative trade transaction hashes in the DoraHacks submission.
 
 ## BNB Agent SDK
 
-Use the BNB Agent SDK to register a discoverable ERC-8004 agent identity on BSC
-testnet. First install the optional SDK in your local environment:
+Use the BNB Agent SDK path to preview a discoverable ERC-8004 agent identity on
+BSC testnet. The dry-run preview does not require the optional SDK, wallet
+funding, or secrets:
+
+```powershell
+uv run defiquant bnb-register --config configs/strategy.json --agent-url https://example.com --wallet-address 0x9206D8416A11c5E54427fE5f226B3Ed384a266Cc --network bsc-testnet --dry-run
+```
+
+Use `docs/bnb_agent_identity.md` and `configs/bnb_agent_identity.json` for the
+dry-run evidence bundle, live-registration hard stop, and transaction evidence
+checklist.
+
+Install the optional SDK only after live registration is explicitly approved:
 
 ```powershell
 uv pip install bnbagent
@@ -121,14 +132,8 @@ $env:PRIVATE_KEY="0x..."
 $env:NETWORK="bsc-testnet"
 ```
 
-Preview metadata:
+Register only when the wallet, metadata, funding, and approval are correct:
 
 ```powershell
-uv run defiquant bnb-register --agent-url https://example.com --dry-run
-```
-
-Register when the wallet and metadata are correct:
-
-```powershell
-uv run defiquant bnb-register --agent-url https://example.com --live
+uv run defiquant bnb-register --config configs/strategy.json --agent-url https://example.com --wallet-address 0x9206D8416A11c5E54427fE5f226B3Ed384a266Cc --network bsc-testnet --live --confirm-live I_UNDERSTAND_BNB_AGENT_REGISTRATION_RISK
 ```

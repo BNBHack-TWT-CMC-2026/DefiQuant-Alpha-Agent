@@ -144,7 +144,7 @@ uv run defiquant profile --config configs/strategy.json --agent-url https://exam
 Preview BNB Agent SDK ERC-8004 registration metadata:
 
 ```powershell
-uv run defiquant bnb-register --config configs/strategy.json --agent-url https://example.com --wallet-address 0x... --dry-run
+uv run defiquant bnb-register --config configs/strategy.json --agent-url https://example.com --wallet-address 0x... --network bsc-testnet --dry-run
 ```
 
 MCP templates:
@@ -153,9 +153,11 @@ MCP templates:
 - `configs/mcp/cmc-x402.json`: CMC Agent Hub through x402 pay-per-call.
 - `configs/mcp/twak.json`: TWAK MCP server through `twak serve`.
 - `configs/cmc_agent_context.json`: read-only CMC Agent Hub prompt template and spend guardrails.
+- `configs/bnb_agent_identity.json`: BNB Agent SDK identity dry-run and live guardrails.
 
 Track 1 operations:
 
 - `docs/track1_registration.md`: registration preflight and evidence capture.
 - `docs/track1_live_operations.md`: live-window operating loop and halt criteria.
 - `configs/live_operations.json`: funding and live notional cap presets.
+- `docs/bnb_agent_identity.md`: BNB Agent SDK identity dry-run and registration hard stop.
