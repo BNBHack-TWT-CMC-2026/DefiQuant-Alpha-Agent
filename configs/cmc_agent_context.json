@@ -1,0 +1,39 @@
+{
+  "purpose": "Read-only CoinMarketCap Agent Hub context for strategy rationale and demo evidence.",
+  "mcp_configs": {
+    "standard": "configs/mcp/cmc-mcp.json",
+    "x402": "configs/mcp/cmc-x402.json"
+  },
+  "read_only": true,
+  "mutation_allowed": false,
+  "spend_guardrails": {
+    "standard_mcp": "uses existing CMC API plan credits",
+    "x402": "pay-per-call; run only with explicit spend limit",
+    "default_x402_demo_limit_usd": 1.0
+  },
+  "context_categories": [
+    "latest quotes for configured universe",
+    "technical analysis summary",
+    "liquidity and volume anomalies",
+    "market narratives and trending sectors",
+    "risk headlines and news summaries"
+  ],
+  "prompt_template": {
+    "system": "You are a read-only market context provider. Do not suggest wallet actions, private key handling, transaction signing, or trade execution.",
+    "user": "For the BNB Chain symbols {{symbols}}, summarize latest CMC market context for strategy rationale. Return JSON with keys: timestamp_utc, symbols, bullish_context, bearish_context, liquidity_notes, risk_notes, sources, and do_not_execute=true."
+  },
+  "strategy_usage": {
+    "allowed": [
+      "attach context to signal rationale",
+      "explain why a dry-run plan should be delayed or halted",
+      "create demo evidence for DoraHacks and Track 2"
+    ],
+    "not_allowed": [
+      "override hard risk limits",
+      "execute trades",
+      "fund wallets",
+      "submit transactions",
+      "store secrets"
+    ]
+  }
+}

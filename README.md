@@ -152,6 +152,7 @@ MCP templates:
 - `configs/mcp/cmc-mcp.json`: CMC Agent Hub with API key.
 - `configs/mcp/cmc-x402.json`: CMC Agent Hub through x402 pay-per-call.
 - `configs/mcp/twak.json`: TWAK MCP server through `twak serve`.
+- `configs/cmc_agent_context.json`: read-only CMC Agent Hub prompt template and spend guardrails.
 
 Track 1 operations:
 

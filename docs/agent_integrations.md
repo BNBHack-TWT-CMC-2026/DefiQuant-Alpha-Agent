@@ -25,6 +25,9 @@ Use this MCP config in an MCP-compatible client to ask CMC Agent Hub for
 read-only market context such as latest quotes, technical analysis, market
 metrics, trending narratives, and news. CMC MCP does not execute trades.
 
+Use `docs/cmc_agent_context.md` and `configs/cmc_agent_context.json` to keep
+Agent Hub prompts read-only and separate from TWAK/live execution.
+
 For x402 evidence, use:
 
 ```json

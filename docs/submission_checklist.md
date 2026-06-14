@@ -22,6 +22,7 @@
 
 - Show CMC data flowing into the strategy.
 - Show CMC Agent Hub MCP configuration from `configs/mcp/cmc-mcp.json`.
+- Show CMC Agent Hub read-only context template from `configs/cmc_agent_context.json`.
 - Show CMC x402 MCP configuration from `configs/mcp/cmc-x402.json` if the wallet/client is funded.
 - Show TWAK as the execution/signing layer.
 - Show TWAK MCP configuration from `configs/mcp/twak.json`.
@@ -51,6 +52,7 @@
 
 - CMC REST API for deterministic OHLCV backtests.
 - CMC MCP for agent-ready read-only market context.
+- CMC Agent Hub context runbook with non-execution boundary.
 - CMC x402 MCP demo path with spend limits.
 - TWAK CLI for `twak swap` execution plans using BSC token contract addresses.
 - TWAK wallet portfolio loading for dry-run order planning.
