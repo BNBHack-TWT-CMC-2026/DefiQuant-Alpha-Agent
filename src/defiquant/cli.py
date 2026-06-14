@@ -303,7 +303,7 @@ def _track1_preflight(args: argparse.Namespace, config: AppConfig) -> dict[str, 
         ),
         "wallet_address": _preflight_check(
             "wallet_address",
-            lambda: _json_text(check_adapter.wallet_address()),
+            lambda: _json_text(check_adapter.wallet_address(), required=args.run_read_only),
         ),
     }
     if not args.skip_portfolio:
@@ -348,12 +348,14 @@ def _preflight_check(name: str, callback: Callable[[], object]) -> dict[str, obj
         return {"ok": False, "error": f"{name} failed: {exc}"}
 
 
-def _json_text(value: object) -> object:
+def _json_text(value: object, *, required: bool = False) -> object:
     if not isinstance(value, str):
         return value
     try:
         return json.loads(value)
-    except json.JSONDecodeError:
+    except json.JSONDecodeError as exc:
+        if required:
+            raise ValueError("expected JSON output") from exc
         return value
 
 

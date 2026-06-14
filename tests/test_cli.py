@@ -84,6 +84,31 @@ def test_track1_preflight_run_read_only_uses_wallet_checks(
     assert read_instances
 
 
+def test_track1_preflight_read_only_rejects_invalid_wallet_json(
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    fake = FakeTwakAdapter
+    fake.instances = []
+    fake.portfolio_reads = 0
+    monkeypatch.setattr(fake, "invalid_wallet_json", True)
+    monkeypatch.setattr("defiquant.cli.TwakCliExecutionAdapter", fake)
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        ["defiquant", "track1-preflight", "--run-read-only"],
+    )
+
+    main()
+
+    payload = json.loads(capsys.readouterr().out)
+    assert payload["checks"]["wallet_address"] == {
+        "ok": False,
+        "error": "wallet_address failed: expected JSON output",
+    }
+    assert payload["checks"]["wallet_portfolio"]["ok"] is True
+
+
 def test_execute_twak_live_requires_guard_conditions(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -296,6 +321,7 @@ class FakeTwakAdapter:
     orders: ClassVar[list[Order]] = []
     quote_orders: ClassVar[list[Order]] = []
     instances: ClassVar[list[FakeTwakAdapter]] = []
+    invalid_wallet_json = False
 
     def __init__(self, *args: object, **kwargs: object) -> None:
         self.chain = "bsc"
@@ -314,6 +340,8 @@ class FakeTwakAdapter:
     def wallet_address(self) -> str:
         if self.dry_run:
             return "wallet-address:dry-run"
+        if type(self).invalid_wallet_json:
+            return "not-json"
         return '{"chain":"bsc","address":"0xPreflight"}'
 
     def wallet_portfolio_preview(self) -> str:
