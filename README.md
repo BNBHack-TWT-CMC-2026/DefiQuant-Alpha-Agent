@@ -113,7 +113,8 @@ Weights are inverse-volatility adjusted, capped per asset, and forced to keep a 
 
 ## Safety Defaults
 
-- TWAK swap submission defaults to dry-run and remains blocked until wallet portfolio loading is wired.
+- TWAK swap planning defaults to dry-run and can read TWAK wallet portfolio with `--portfolio twak`.
+- TWAK live swap submission remains blocked until quote validation is wired.
 - One-way external actions such as Track 1 or BNB Agent registration require `--live`.
 - The max drawdown default is below the example disqualification threshold.
 - Strategy config loading fails if the universe includes tokens outside the competition allowlist.

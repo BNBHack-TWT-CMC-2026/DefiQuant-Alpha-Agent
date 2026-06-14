@@ -61,10 +61,11 @@ exact command plan without signing:
 
 ```powershell
 uv run defiquant execute --config configs/strategy.json --cmc-days 90 --adapter twak --dry-run
+uv run defiquant execute --config configs/strategy.json --cmc-days 90 --adapter twak --portfolio twak --dry-run
 ```
 
-Live swap submission is intentionally blocked until the CLI loads actual TWAK
-wallet portfolio balances instead of using backtest cash assumptions.
+Live swap submission is intentionally blocked until quote validation is wired.
+Use `--portfolio twak` to rehearse order planning from the actual wallet state.
 
 ## Track 1 Registration
 

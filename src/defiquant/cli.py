@@ -8,11 +8,12 @@ from pathlib import Path
 from defiquant.agent_profile import build_agent_profile
 from defiquant.backtest import Backtester
 from defiquant.bnb_agent import preview_bnb_registration, register_bnb_agent
-from defiquant.config import load_config, to_jsonable
+from defiquant.config import AppConfig, load_config, to_jsonable
 from defiquant.data.cmc import DEFAULT_CMC_HISTORY_DAYS, load_cmc_market
 from defiquant.data.fixtures import fixture_market
 from defiquant.execution.paper import PaperExecutionAdapter
 from defiquant.execution.twak_cli import TwakCliExecutionAdapter
+from defiquant.execution.twak_portfolio import parse_twak_portfolio
 from defiquant.models import MarketData, PortfolioState
 from defiquant.risk import RiskManager
 from defiquant.strategy import MomentumLiquidityStrategy
@@ -32,6 +33,12 @@ def main() -> None:
     _add_market_args(execute)
     _add_live_args(execute)
     execute.add_argument("--adapter", choices=("paper", "twak"), default="paper")
+    execute.add_argument(
+        "--portfolio",
+        choices=("backtest", "twak"),
+        default="backtest",
+        help="Portfolio state source for order planning; default backtest cash.",
+    )
 
     register = subparsers.add_parser("register-track1")
     _add_live_args(register)
@@ -108,10 +115,7 @@ def main() -> None:
         return
 
     prices = {symbol: candles[-1].close for symbol, candles in market.items() if candles}
-    portfolio = PortfolioState(
-        cash=config.backtest.initial_cash,
-        high_watermark=config.backtest.initial_cash,
-    )
+    portfolio = _load_portfolio(args, config, prices)
     signals = risk.apply(strategy.generate(market), portfolio, prices)
 
     if args.command == "signal":
@@ -121,8 +125,8 @@ def main() -> None:
     orders = risk.build_orders(signals, portfolio, prices)
     if args.adapter == "twak" and not args.dry_run:
         raise SystemExit(
-            "Live TWAK swap submission is disabled until wallet portfolio loading is wired. "
-            "Use the default dry-run plan for now."
+            "Live TWAK swap submission is disabled until quote validation is wired. "
+            "Use --dry-run --portfolio twak for wallet-based planning."
         )
     adapter = (
         TwakCliExecutionAdapter(
@@ -186,6 +190,36 @@ def _load_market(
         except (OSError, RuntimeError, ValueError) as exc:
             raise SystemExit(f"CMC market loading failed: {exc}") from exc
     return fixture_market(symbols)
+
+
+def _load_portfolio(
+    args: argparse.Namespace,
+    config: AppConfig,
+    prices: dict[str, float],
+) -> PortfolioState:
+    if args.command != "execute" or args.portfolio == "backtest":
+        return PortfolioState(
+            cash=config.backtest.initial_cash,
+            high_watermark=config.backtest.initial_cash,
+        )
+
+    if args.adapter != "twak":
+        raise SystemExit("--portfolio twak requires --adapter twak")
+
+    adapter = TwakCliExecutionAdapter(
+        dry_run=True,
+        stable_symbol=config.strategy.stable_symbol,
+    )
+    try:
+        return parse_twak_portfolio(
+            adapter.wallet_portfolio(),
+            chain=adapter.chain,
+            stable_symbol=config.strategy.stable_symbol,
+            prices=prices,
+            allowed_symbols=config.universe_symbols,
+        )
+    except (OSError, RuntimeError, ValueError) as exc:
+        raise SystemExit(f"TWAK portfolio loading failed: {exc}") from exc
 
 
 if __name__ == "__main__":

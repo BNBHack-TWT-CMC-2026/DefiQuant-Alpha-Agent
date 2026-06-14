@@ -1,5 +1,10 @@
 from __future__ import annotations
 
+from pathlib import Path
+from typing import Any
+
+import pytest
+
 from defiquant.execution.twak_cli import TwakCliExecutionAdapter
 from defiquant.models import Order
 
@@ -68,3 +73,24 @@ def test_twak_bsc_swap_requires_token_addresses() -> None:
         assert str(exc) == "Missing BSC token address for CAKE"
     else:
         raise AssertionError("Expected missing token address to fail closed")
+
+
+def test_twak_wallet_portfolio_reads_json(monkeypatch: pytest.MonkeyPatch) -> None:
+    calls: list[list[str]] = []
+
+    class Completed:
+        stdout = '[{"chain":"bsc","symbol":"USDT","balance":"1","usdValue":1}]'
+
+    def fake_run(command: list[str], **kwargs: Any) -> Completed:
+        calls.append(command)
+        assert kwargs == {"check": True, "capture_output": True, "text": True}
+        return Completed()
+
+    monkeypatch.setattr("defiquant.execution.twak_cli.subprocess.run", fake_run)
+    adapter = TwakCliExecutionAdapter(dry_run=True, cli_path="twak", chain="bsc")
+
+    payload = adapter.wallet_portfolio()
+
+    assert payload == [{"chain": "bsc", "symbol": "USDT", "balance": "1", "usdValue": 1}]
+    assert Path(calls[0][0]).stem.lower() == "twak"
+    assert calls[0][1:] == ["wallet", "portfolio", "--chains", "bsc", "--json"]

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import shlex
+import shutil
 import subprocess
 from collections.abc import Sequence
 from pathlib import Path
@@ -45,7 +46,7 @@ class TwakCliExecutionAdapter(ExecutionAdapter):
 
         results: list[str] = []
         for command in commands:
-            completed = subprocess.run(command, check=True, capture_output=True, text=True)
+            completed = _run_command(command)
             results.append(completed.stdout.strip())
         return results
 
@@ -54,7 +55,7 @@ class TwakCliExecutionAdapter(ExecutionAdapter):
         if self.dry_run:
             return f"twak-dry-run:{_format_command(command)}"
 
-        completed = subprocess.run(command, check=True, capture_output=True, text=True)
+        completed = _run_command(command)
         return completed.stdout.strip()
 
     def wallet_address(self) -> str:
@@ -62,8 +63,13 @@ class TwakCliExecutionAdapter(ExecutionAdapter):
         if self.dry_run:
             return f"twak-dry-run:{_format_command(command)}"
 
-        completed = subprocess.run(command, check=True, capture_output=True, text=True)
+        completed = _run_command(command)
         return completed.stdout.strip()
+
+    def wallet_portfolio(self) -> object:
+        command = [*self.cli_command, "wallet", "portfolio", "--chains", self.chain, "--json"]
+        completed = _run_command(command)
+        return json.loads(completed.stdout)
 
     def _swap_command(self, order: Order) -> list[str]:
         amount = order.source_amount if order.source_amount is not None else order.notional
@@ -106,6 +112,17 @@ def _format_amount(value: float) -> str:
 
 def _format_command(command: Sequence[str]) -> str:
     return json.dumps(list(command), separators=(",", ":"))
+
+
+def _run_command(command: list[str]) -> subprocess.CompletedProcess[str]:
+    return subprocess.run(_resolve_command(command), check=True, capture_output=True, text=True)
+
+
+def _resolve_command(command: list[str]) -> list[str]:
+    executable = shutil.which(command[0])
+    if executable is None:
+        return command
+    return [executable, *command[1:]]
 
 
 def _load_token_addresses(chain: str, configured_path: str | None) -> dict[str, str]:
