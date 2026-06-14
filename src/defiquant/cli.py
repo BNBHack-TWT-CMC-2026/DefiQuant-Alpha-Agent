@@ -8,6 +8,7 @@ from datetime import date
 from math import isfinite
 from pathlib import Path
 
+from defiquant.agent_endpoint import build_agent_endpoint_payloads
 from defiquant.agent_profile import build_agent_profile
 from defiquant.backtest import Backtester
 from defiquant.bnb_agent import preview_bnb_registration, register_bnb_agent
@@ -20,6 +21,7 @@ from defiquant.execution.twak_portfolio import parse_twak_portfolio
 from defiquant.models import MarketData, Order, PortfolioState
 from defiquant.risk import RiskManager
 from defiquant.strategy import MomentumLiquidityStrategy
+from defiquant.tuning import load_risk_tuning_candidates, rank_risk_candidates
 
 LIVE_CONFIRMATION_PHRASE = "I_UNDERSTAND_TWAK_LIVE_SWAP_RISK"
 BNB_AGENT_REGISTRATION_CONFIRMATION_PHRASE = "I_UNDERSTAND_BNB_AGENT_REGISTRATION_RISK"
@@ -34,6 +36,11 @@ def main() -> None:
 
     signal = subparsers.add_parser("signal")
     _add_market_args(signal)
+
+    tune_risk = subparsers.add_parser("tune-risk")
+    _add_market_args(tune_risk)
+    tune_risk.add_argument("--candidates", default="configs/risk_tuning.json")
+    tune_risk.add_argument("--top", type=int, default=5)
 
     execute = subparsers.add_parser("execute")
     _add_market_args(execute)
@@ -74,6 +81,12 @@ def main() -> None:
     profile.add_argument("--config", default="configs/strategy.json")
     profile.add_argument("--agent-url", default="")
     profile.add_argument("--wallet-address", default="")
+
+    agent_endpoints = subparsers.add_parser("agent-endpoints")
+    agent_endpoints.add_argument("--config", default="configs/strategy.json")
+    agent_endpoints.add_argument("--agent-url", required=True)
+    agent_endpoints.add_argument("--wallet-address", default="")
+    agent_endpoints.add_argument("--network", default="bsc-testnet")
 
     bnb_register = subparsers.add_parser("bnb-register")
     bnb_register.add_argument("--config", default="configs/strategy.json")
@@ -120,6 +133,20 @@ def main() -> None:
         )
         return
 
+    if args.command == "agent-endpoints":
+        print(
+            json.dumps(
+                build_agent_endpoint_payloads(
+                    config,
+                    agent_url=args.agent_url,
+                    wallet_address=args.wallet_address,
+                    network=args.network,
+                ),
+                indent=2,
+            )
+        )
+        return
+
     if args.command == "bnb-register":
         if not args.dry_run:
             _validate_bnb_registration_live_args(args)
@@ -139,6 +166,30 @@ def main() -> None:
             )
         )
         print(json.dumps(to_jsonable(result), indent=2))
+        return
+
+    if args.command == "tune-risk":
+        market = _load_market(
+            args.fixture,
+            config.universe_symbols,
+            cmc_days=args.cmc_days,
+            cmc_end_date=args.cmc_end_date,
+        )
+        candidates = load_risk_tuning_candidates(Path(args.candidates))
+        ranked = rank_risk_candidates(config, market, candidates)
+        limit = max(1, args.top)
+        print(
+            json.dumps(
+                {
+                    "market_source": "fixture" if args.fixture else "coinmarketcap",
+                    "cmc_days": args.cmc_days,
+                    "cmc_end_date": args.cmc_end_date,
+                    "candidates_path": args.candidates,
+                    "top": ranked[:limit],
+                },
+                indent=2,
+            )
+        )
         return
 
     if args.command == "execute" and args.adapter == "twak" and not args.dry_run:

@@ -97,6 +97,10 @@ command is safe to run in dry-run mode and read-only mode. The final
 `register-track1 --live` command is an irreversible external registration and
 must not be run without explicit approval in the current thread.
 
+Use `docs/prefunding_readiness.md` and `configs/risk_tuning.json` for CMC-backed
+risk tuning, endpoint payload preparation, and TWAK read-only checks before
+funding the Track 1 wallet.
+
 Use `docs/track1_live_operations.md` and `configs/live_operations.json` for the
 post-registration funding policy, live notional caps, daily trade loop, halt
 criteria, and local evidence archive layout.
@@ -117,6 +121,12 @@ uv run defiquant bnb-register --config configs/strategy.json --agent-url https:/
 Use `docs/bnb_agent_identity.md` and `configs/bnb_agent_identity.json` for the
 dry-run evidence bundle, live-registration hard stop, and transaction evidence
 checklist.
+
+Prepare the endpoint payloads before hosting the final public URL:
+
+```powershell
+uv run defiquant agent-endpoints --config configs/strategy.json --agent-url https://example.com --wallet-address 0x9206D8416A11c5E54427fE5f226B3Ed384a266Cc --network bsc-testnet
+```
 
 Install the optional SDK only after live registration is explicitly approved:
 

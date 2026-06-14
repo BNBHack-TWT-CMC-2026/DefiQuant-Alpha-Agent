@@ -3,15 +3,15 @@
     "lookback_days": 14,
     "trend_fast_days": 7,
     "trend_slow_days": 21,
-    "top_n": 5,
-    "min_score": -0.05,
+    "top_n": 3,
+    "min_score": 0.0,
     "stable_symbol": "USDT"
   },
   "risk": {
     "max_drawdown": 0.2,
-    "max_position_weight": 0.1,
-    "min_cash_weight": 0.3,
-    "max_daily_turnover": 0.25,
+    "max_position_weight": 0.07,
+    "min_cash_weight": 0.5,
+    "max_daily_turnover": 0.12,
     "fee_bps": 15,
     "slippage_bps": 20
   },

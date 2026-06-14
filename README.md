@@ -51,6 +51,15 @@ Run the full local check:
 .\scripts\check.ps1
 ```
 
+Before funding the Track 1 wallet, run the safe readiness loop:
+
+```powershell
+uv run defiquant tune-risk --config configs/strategy.json --candidates configs/risk_tuning.json --cmc-days 90 --top 5
+uv run defiquant agent-endpoints --config configs/strategy.json --agent-url https://example.com --wallet-address 0x... --network bsc-testnet
+uv run defiquant track1-preflight --run-read-only
+uv run defiquant execute --config configs/strategy.json --cmc-days 90 --adapter twak --portfolio twak --validate-quotes --dry-run
+```
+
 ## Agent And CLI Setup
 
 - Local Codex CLI notes/settings can live under `.codex/`, but that directory is intentionally ignored by git.
@@ -154,9 +163,11 @@ MCP templates:
 - `configs/mcp/twak.json`: TWAK MCP server through `twak serve`.
 - `configs/cmc_agent_context.json`: read-only CMC Agent Hub prompt template and spend guardrails.
 - `configs/bnb_agent_identity.json`: BNB Agent SDK identity dry-run and live guardrails.
+- `configs/risk_tuning.json`: CMC-backed risk tuning candidate presets.
 
 Track 1 operations:
 
+- `docs/prefunding_readiness.md`: safe checks before wallet funding.
 - `docs/track1_registration.md`: registration preflight and evidence capture.
 - `docs/track1_live_operations.md`: live-window operating loop and halt criteria.
 - `configs/live_operations.json`: funding and live notional cap presets.

@@ -1,0 +1,67 @@
+{
+  "purpose": "Funding-free CMC backtest sweep for Track 1 risk parameter selection.",
+  "cmc_plan_assumption": "CoinMarketCap Startup plan: 30 requests per minute, 1 month intraday-style historical access, and up to 24 months daily historical access.",
+  "default_window": {
+    "days": 90,
+    "end_date": "last complete UTC day unless --cmc-end-date is provided"
+  },
+  "ranking": {
+    "eligible": "candidate must meet minimum trade days and stay within its max_drawdown cap",
+    "risk_adjusted_score": "total_return - 1.5 * max_drawdown + 0.03 * sharpe"
+  },
+  "candidates": [
+    {
+      "name": "baseline_current",
+      "strategy_overrides": {},
+      "risk_overrides": {}
+    },
+    {
+      "name": "balanced_cash_35_turnover_20",
+      "strategy_overrides": {
+        "top_n": 5,
+        "min_score": -0.04
+      },
+      "risk_overrides": {
+        "max_position_weight": 0.1,
+        "min_cash_weight": 0.35,
+        "max_daily_turnover": 0.2
+      }
+    },
+    {
+      "name": "defensive_cash_40_position_08",
+      "strategy_overrides": {
+        "top_n": 4,
+        "min_score": -0.02
+      },
+      "risk_overrides": {
+        "max_position_weight": 0.08,
+        "min_cash_weight": 0.4,
+        "max_daily_turnover": 0.15
+      }
+    },
+    {
+      "name": "high_reserve_cash_50",
+      "strategy_overrides": {
+        "top_n": 3,
+        "min_score": 0.0
+      },
+      "risk_overrides": {
+        "max_position_weight": 0.07,
+        "min_cash_weight": 0.5,
+        "max_daily_turnover": 0.12
+      }
+    },
+    {
+      "name": "trade_day_coverage",
+      "strategy_overrides": {
+        "top_n": 5,
+        "min_score": -0.08
+      },
+      "risk_overrides": {
+        "max_position_weight": 0.1,
+        "min_cash_weight": 0.3,
+        "max_daily_turnover": 0.25
+      }
+    }
+  ]
+}
