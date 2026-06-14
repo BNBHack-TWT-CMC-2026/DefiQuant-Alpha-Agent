@@ -22,7 +22,7 @@ def test_register_track1_defaults_to_dry_run(
     assert payload == {"registration": 'twak-dry-run:["twak","compete","register"]'}
 
 
-def test_execute_twak_live_is_blocked_until_wallet_portfolio_is_wired(
+def test_execute_twak_live_is_blocked_until_quote_validation_is_wired(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     monkeypatch.setattr(
