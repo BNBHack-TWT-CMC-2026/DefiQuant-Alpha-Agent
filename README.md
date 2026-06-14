@@ -43,7 +43,6 @@ Run the full local check:
 - Local Codex CLI notes/settings can live under `.codex/`, but that directory is intentionally ignored by git.
 - The current local agent guide is `.codex/AGENTS.md`.
 - Keep shareable project facts in tracked docs such as `README.md`, `context_info.md`, and `docs/submission_checklist.md`.
-- Follow [docs/github_workflow.md](docs/github_workflow.md) for Issue, branch, commit, PR, review, and merge flow.
 - Use `codex` from this repo root so local Codex settings can apply in your shell.
 
 ## Architecture
