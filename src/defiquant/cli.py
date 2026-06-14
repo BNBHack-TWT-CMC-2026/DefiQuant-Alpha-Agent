@@ -2,7 +2,9 @@ from __future__ import annotations
 
 import argparse
 import json
+from collections.abc import Sequence
 from datetime import date
+from math import isfinite
 from pathlib import Path
 
 from defiquant.agent_profile import build_agent_profile
@@ -14,9 +16,11 @@ from defiquant.data.fixtures import fixture_market
 from defiquant.execution.paper import PaperExecutionAdapter
 from defiquant.execution.twak_cli import TwakCliExecutionAdapter
 from defiquant.execution.twak_portfolio import parse_twak_portfolio
-from defiquant.models import MarketData, PortfolioState
+from defiquant.models import MarketData, Order, PortfolioState
 from defiquant.risk import RiskManager
 from defiquant.strategy import MomentumLiquidityStrategy
+
+LIVE_CONFIRMATION_PHRASE = "I_UNDERSTAND_TWAK_LIVE_SWAP_RISK"
 
 
 def main() -> None:
@@ -32,6 +36,7 @@ def main() -> None:
     execute = subparsers.add_parser("execute")
     _add_market_args(execute)
     _add_live_args(execute)
+    _add_twak_live_guard_args(execute)
     execute.add_argument("--adapter", choices=("paper", "twak"), default="paper")
     execute.add_argument(
         "--portfolio",
@@ -99,6 +104,9 @@ def main() -> None:
         print(json.dumps(to_jsonable(result), indent=2))
         return
 
+    if args.command == "execute" and args.adapter == "twak" and not args.dry_run:
+        _validate_twak_live_static_args(args)
+
     market = _load_market(
         args.fixture,
         config.universe_symbols,
@@ -135,21 +143,27 @@ def main() -> None:
         adapter = TwakCliExecutionAdapter(
             dry_run=args.dry_run,
             stable_symbol=config.strategy.stable_symbol,
+            quote_only=args.dry_run,
         )
+        if not args.dry_run:
+            _validate_twak_live_preflight(args, orders)
         quote_results = adapter.validate_quotes(orders) if args.validate_quotes else None
         if not args.dry_run:
-            raise SystemExit(
-                "Live TWAK swap submission is disabled until explicit live enablement is added. "
-                "Use --dry-run --portfolio twak --validate-quotes for wallet-based rehearsal."
-            )
+            _validate_twak_live_quotes(orders, quote_results)
+        audit = (
+            _twak_execution_audit(args, orders, quote_results)
+            if args.validate_quotes or not args.dry_run
+            else None
+        )
     else:
         adapter = PaperExecutionAdapter()
         quote_results = None
+        audit = None
 
     execution_results = adapter.execute(orders)
     output = (
-        {"quotes": quote_results, "execution": execution_results}
-        if quote_results is not None
+        {"quotes": quote_results, "execution": execution_results, "audit": audit}
+        if quote_results is not None or audit is not None
         else execution_results
     )
     print(json.dumps(to_jsonable(output), indent=2))
@@ -168,6 +182,20 @@ def _add_live_args(parser: argparse.ArgumentParser) -> None:
         dest="dry_run",
         action="store_false",
         help="Submit the external action. Use only after rehearsal and explicit approval.",
+    )
+
+
+def _add_twak_live_guard_args(parser: argparse.ArgumentParser) -> None:
+    parser.add_argument(
+        "--confirm-live",
+        default="",
+        help=(f"Required for TWAK live swaps; must exactly match {LIVE_CONFIRMATION_PHRASE}."),
+    )
+    parser.add_argument(
+        "--max-live-notional-usd",
+        type=float,
+        default=0.0,
+        help="Maximum USD notional allowed for each TWAK live order and the total batch.",
     )
 
 
@@ -236,6 +264,83 @@ def _load_portfolio(
         )
     except (OSError, RuntimeError, ValueError) as exc:
         raise SystemExit(f"TWAK portfolio loading failed: {exc}") from exc
+
+
+def _validate_twak_live_preflight(
+    args: argparse.Namespace,
+    orders: list[Order],
+) -> None:
+    errors = _twak_live_static_errors(args)
+    max_notional = args.max_live_notional_usd
+    total_notional = sum(order.notional for order in orders)
+
+    if not orders:
+        errors.append("--live requires at least one planned order")
+
+    over_limit = [order for order in orders if order.notional > max_notional]
+    if max_notional > 0 and over_limit:
+        symbols = ", ".join(order.symbol for order in over_limit)
+        errors.append(f"planned order exceeds --max-live-notional-usd: {symbols}")
+    if max_notional > 0 and total_notional > max_notional:
+        errors.append(
+            "planned total notional exceeds --max-live-notional-usd: "
+            f"{total_notional:.2f} > {max_notional:.2f}"
+        )
+
+    if errors:
+        raise SystemExit("Live TWAK guard failed:\n- " + "\n- ".join(errors))
+
+
+def _validate_twak_live_static_args(args: argparse.Namespace) -> None:
+    errors = _twak_live_static_errors(args)
+    if errors:
+        raise SystemExit("Live TWAK guard failed:\n- " + "\n- ".join(errors))
+
+
+def _twak_live_static_errors(args: argparse.Namespace) -> list[str]:
+    errors: list[str] = []
+    max_notional = args.max_live_notional_usd
+
+    if args.portfolio != "twak":
+        errors.append("--live requires --portfolio twak")
+    if not args.validate_quotes:
+        errors.append("--live requires --validate-quotes")
+    if args.confirm_live != LIVE_CONFIRMATION_PHRASE:
+        errors.append(f"--confirm-live must exactly match {LIVE_CONFIRMATION_PHRASE}")
+    if not isfinite(max_notional) or max_notional <= 0:
+        errors.append("--live requires finite --max-live-notional-usd greater than 0")
+    return errors
+
+
+def _validate_twak_live_quotes(
+    orders: list[Order],
+    quote_results: Sequence[object] | None,
+) -> None:
+    errors: list[str] = []
+    if quote_results is None:
+        errors.append("--live requires successful TWAK quote validation")
+    elif len(quote_results) != len(orders):
+        errors.append("TWAK quote validation count must match planned orders")
+
+    if errors:
+        raise SystemExit("Live TWAK guard failed:\n- " + "\n- ".join(errors))
+
+
+def _twak_execution_audit(
+    args: argparse.Namespace,
+    orders: list[Order],
+    quote_results: Sequence[object] | None,
+) -> dict[str, object]:
+    return {
+        "dry_run": args.dry_run,
+        "portfolio_source": args.portfolio,
+        "quote_validation": quote_results is not None,
+        "quote_count": len(quote_results) if quote_results is not None else 0,
+        "order_count": len(orders),
+        "total_notional_usd": round(sum(order.notional for order in orders), 8),
+        "max_live_notional_usd": args.max_live_notional_usd,
+        "live_confirmed": args.confirm_live == LIVE_CONFIRMATION_PHRASE,
+    }
 
 
 if __name__ == "__main__":

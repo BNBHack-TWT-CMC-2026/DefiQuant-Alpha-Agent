@@ -66,8 +66,17 @@ uv run defiquant execute --config configs/strategy.json --cmc-days 90 --adapter 
 ```
 
 Use `--portfolio twak` to rehearse order planning from the actual wallet state,
-and `--validate-quotes` to call TWAK quote-only for each planned swap. Live swap
-submission is intentionally blocked until explicit live enablement is added.
+and `--validate-quotes` to call TWAK quote-only for each planned swap.
+
+Live swap submission is fail-closed unless every live guard is supplied:
+
+```powershell
+uv run defiquant execute --config configs/strategy.json --cmc-days 90 --adapter twak --portfolio twak --validate-quotes --live --confirm-live I_UNDERSTAND_TWAK_LIVE_SWAP_RISK --max-live-notional-usd 10
+```
+
+Use the smallest practical cap for rehearsal funding. The CLI checks that each
+order and the total planned batch are within `--max-live-notional-usd` before
+submitting any TWAK swap.
 
 ## Track 1 Registration
 

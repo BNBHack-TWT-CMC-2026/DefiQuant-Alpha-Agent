@@ -50,5 +50,6 @@
 - TWAK CLI for `twak swap` execution plans using BSC token contract addresses.
 - TWAK wallet portfolio loading for dry-run order planning.
 - TWAK quote-only validation for planned swaps before enabling live swap submission.
+- TWAK live swap guard requiring wallet portfolio, quote validation, explicit confirmation phrase, and max live notional cap.
 - TWAK `compete register` registration path before the Track 1 deadline.
 - BNB Agent SDK ERC-8004 identity path for discoverability.

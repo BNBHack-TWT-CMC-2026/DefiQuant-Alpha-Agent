@@ -42,6 +42,7 @@ Dry-run a TWAK execution plan:
 
 ```powershell
 uv run defiquant execute --config configs/strategy.json --cmc-days 90 --adapter twak --dry-run
+uv run defiquant execute --config configs/strategy.json --cmc-days 90 --adapter twak --portfolio twak --validate-quotes --dry-run
 ```
 
 Run the full local check:
@@ -114,7 +115,9 @@ Weights are inverse-volatility adjusted, capped per asset, and forced to keep a 
 ## Safety Defaults
 
 - TWAK swap planning defaults to dry-run and can read TWAK wallet portfolio with `--portfolio twak`.
-- TWAK quote validation is available with `--validate-quotes`; live swap submission remains blocked until explicit live enablement is added.
+- TWAK quote validation is available with `--validate-quotes`.
+- TWAK live swaps require `--portfolio twak`, `--validate-quotes`, `--confirm-live I_UNDERSTAND_TWAK_LIVE_SWAP_RISK`, and a positive `--max-live-notional-usd` cap.
+- The TWAK live cap is checked against both each planned order and the total planned batch before any swap submission.
 - One-way external actions such as Track 1 or BNB Agent registration require `--live`.
 - The max drawdown default is below the example disqualification threshold.
 - Strategy config loading fails if the universe includes tokens outside the competition allowlist.
