@@ -130,6 +130,8 @@ Weights are inverse-volatility adjusted, capped per asset, and forced to keep a 
 Preview the Track 1 registration command:
 
 ```powershell
+uv run defiquant track1-preflight
+uv run defiquant track1-preflight --run-read-only
 uv run defiquant register-track1 --dry-run
 ```
 

@@ -45,6 +45,25 @@ def test_twak_competition_registration_dry_run() -> None:
     assert adapter.register_competition() == 'twak-dry-run:["twak","compete","register"]'
 
 
+def test_twak_auth_status_reads_json(monkeypatch: pytest.MonkeyPatch) -> None:
+    calls: list[list[str]] = []
+
+    class Completed:
+        stdout = '{"configured":true,"account":"agent"}'
+
+    def fake_run(command: list[str], **kwargs: Any) -> Completed:
+        calls.append(command)
+        assert kwargs == {"check": True, "capture_output": True, "text": True}
+        return Completed()
+
+    monkeypatch.setattr("defiquant.execution.twak_cli.subprocess.run", fake_run)
+    adapter = TwakCliExecutionAdapter(dry_run=False, cli_path="twak")
+
+    assert adapter.auth_status() == {"configured": True, "account": "agent"}
+    assert Path(calls[0][0]).stem.lower() == "twak"
+    assert calls[0][1:] == ["auth", "status", "--json"]
+
+
 def test_twak_cli_prefix_accepts_npx_command() -> None:
     adapter = TwakCliExecutionAdapter(
         dry_run=True,
@@ -55,6 +74,11 @@ def test_twak_cli_prefix_accepts_npx_command() -> None:
     assert (
         adapter.wallet_address() == 'twak-dry-run:["npx","@trustwallet/cli","wallet","address",'
         '"--chain","bsc","--json"]'
+    )
+    assert (
+        adapter.wallet_portfolio_preview()
+        == 'twak-dry-run:["npx","@trustwallet/cli","wallet","portfolio",'
+        '"--chains","bsc","--json"]'
     )
 
 

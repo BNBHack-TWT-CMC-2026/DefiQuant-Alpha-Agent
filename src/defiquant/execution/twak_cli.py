@@ -76,6 +76,14 @@ class TwakCliExecutionAdapter(ExecutionAdapter):
         completed = _run_command(command)
         return completed.stdout.strip()
 
+    def auth_status(self) -> object:
+        command = [*self.cli_command, "auth", "status", "--json"]
+        if self.dry_run:
+            return f"twak-dry-run:{_format_command(command)}"
+
+        completed = _run_command(command)
+        return json.loads(completed.stdout)
+
     def wallet_address(self) -> str:
         command = [*self.cli_command, "wallet", "address", "--chain", self.chain, "--json"]
         if self.dry_run:
@@ -83,6 +91,10 @@ class TwakCliExecutionAdapter(ExecutionAdapter):
 
         completed = _run_command(command)
         return completed.stdout.strip()
+
+    def wallet_portfolio_preview(self) -> str:
+        command = [*self.cli_command, "wallet", "portfolio", "--chains", self.chain, "--json"]
+        return f"twak-dry-run:{_format_command(command)}"
 
     def wallet_portfolio(self) -> object:
         command = [*self.cli_command, "wallet", "portfolio", "--chains", self.chain, "--json"]

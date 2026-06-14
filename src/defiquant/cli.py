@@ -2,7 +2,8 @@ from __future__ import annotations
 
 import argparse
 import json
-from collections.abc import Sequence
+import subprocess
+from collections.abc import Callable, Mapping, Sequence
 from datetime import date
 from math import isfinite
 from pathlib import Path
@@ -54,6 +55,20 @@ def main() -> None:
     _add_live_args(register)
     register.add_argument("--chain", default=None)
 
+    track1_preflight = subparsers.add_parser("track1-preflight")
+    track1_preflight.add_argument("--config", default="configs/strategy.json")
+    track1_preflight.add_argument("--chain", default=None)
+    track1_preflight.add_argument(
+        "--run-read-only",
+        action="store_true",
+        help="Run read-only TWAK auth and wallet checks. Default prints command plans.",
+    )
+    track1_preflight.add_argument(
+        "--skip-portfolio",
+        action="store_true",
+        help="Skip the TWAK wallet portfolio read/check.",
+    )
+
     profile = subparsers.add_parser("profile")
     profile.add_argument("--config", default="configs/strategy.json")
     profile.add_argument("--agent-url", default="")
@@ -73,6 +88,10 @@ def main() -> None:
         return
 
     config = load_config(Path(args.config))
+
+    if args.command == "track1-preflight":
+        print(json.dumps(to_jsonable(_track1_preflight(args, config)), indent=2))
+        return
 
     if args.command == "profile":
         print(
@@ -264,6 +283,90 @@ def _load_portfolio(
         )
     except (OSError, RuntimeError, ValueError) as exc:
         raise SystemExit(f"TWAK portfolio loading failed: {exc}") from exc
+
+
+def _track1_preflight(args: argparse.Namespace, config: AppConfig) -> dict[str, object]:
+    registration_adapter = TwakCliExecutionAdapter(
+        dry_run=True,
+        chain=args.chain,
+        stable_symbol=config.strategy.stable_symbol,
+    )
+    check_adapter = TwakCliExecutionAdapter(
+        dry_run=not args.run_read_only,
+        chain=args.chain,
+        stable_symbol=config.strategy.stable_symbol,
+    )
+    checks = {
+        "auth_status": _preflight_check(
+            "auth_status",
+            lambda: _sanitize_auth_status(check_adapter.auth_status()),
+        ),
+        "wallet_address": _preflight_check(
+            "wallet_address",
+            lambda: _json_text(check_adapter.wallet_address()),
+        ),
+    }
+    if not args.skip_portfolio:
+        portfolio_check = (
+            check_adapter.wallet_portfolio
+            if args.run_read_only
+            else check_adapter.wallet_portfolio_preview
+        )
+        checks["wallet_portfolio"] = _preflight_check("wallet_portfolio", portfolio_check)
+
+    return {
+        "mode": "read_only" if args.run_read_only else "dry_run",
+        "chain": check_adapter.chain,
+        "registration_deadline_utc": config.competition.registration_deadline_utc,
+        "registration_dry_run": registration_adapter.register_competition(),
+        "checks": checks,
+        "hard_stop": {
+            "live_registration": (
+                "Do not run `uv run defiquant register-track1 --live` without explicit "
+                "approval in the current thread."
+            ),
+            "funding": "Do not send funds without explicit approval.",
+            "secrets": "Do not print or store wallet secrets, API secrets, or seed phrases.",
+        },
+        "evidence_to_capture": [
+            "BSC agent wallet address",
+            "TWAK registration transaction hash after approved live registration",
+            "DoraHacks submission screenshot or confirmation URL",
+        ],
+    }
+
+
+def _preflight_check(name: str, callback: Callable[[], object]) -> dict[str, object]:
+    try:
+        return {"ok": True, "result": callback()}
+    except subprocess.CalledProcessError as exc:
+        return {
+            "ok": False,
+            "error": f"{name} command failed with exit code {exc.returncode}",
+        }
+    except (OSError, RuntimeError, ValueError) as exc:
+        return {"ok": False, "error": f"{name} failed: {exc}"}
+
+
+def _json_text(value: object) -> object:
+    if not isinstance(value, str):
+        return value
+    try:
+        return json.loads(value)
+    except json.JSONDecodeError:
+        return value
+
+
+def _sanitize_auth_status(value: object) -> object:
+    if not isinstance(value, Mapping):
+        return value
+    sanitized: dict[str, object] = {}
+    missing = object()
+    for key in ("configured", "source"):
+        item = value.get(key, missing)
+        if item is not missing:
+            sanitized[key] = item
+    return sanitized
 
 
 def _validate_twak_live_preflight(

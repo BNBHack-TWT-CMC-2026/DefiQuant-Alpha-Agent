@@ -83,9 +83,16 @@ submitting any TWAK swap.
 Track 1 registration is a hackathon-specific TWAK action:
 
 ```powershell
+uv run defiquant track1-preflight
+uv run defiquant track1-preflight --run-read-only
 uv run defiquant register-track1 --dry-run
 uv run defiquant register-track1 --live
 ```
+
+Use `docs/track1_registration.md` as the registration runbook. The preflight
+command is safe to run in dry-run mode and read-only mode. The final
+`register-track1 --live` command is an irreversible external registration and
+must not be run without explicit approval in the current thread.
 
 Store the BSC agent wallet address, registration transaction hash, and later
 representative trade transaction hashes in the DoraHacks submission.

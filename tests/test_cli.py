@@ -22,6 +22,68 @@ def test_register_track1_defaults_to_dry_run(
     assert payload == {"registration": 'twak-dry-run:["twak","compete","register"]'}
 
 
+def test_track1_preflight_defaults_to_command_plan(
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    fake = FakeTwakAdapter
+    fake.instances = []
+    fake.portfolio_reads = 0
+    monkeypatch.setattr("defiquant.cli.TwakCliExecutionAdapter", fake)
+    monkeypatch.setattr(sys, "argv", ["defiquant", "track1-preflight"])
+
+    main()
+
+    payload = json.loads(capsys.readouterr().out)
+    assert payload["mode"] == "dry_run"
+    assert payload["chain"] == "bsc"
+    assert payload["registration_dry_run"] == "register:dry-run"
+    assert payload["checks"]["auth_status"] == {"ok": True, "result": "auth:dry-run"}
+    assert payload["checks"]["wallet_address"] == {
+        "ok": True,
+        "result": "wallet-address:dry-run",
+    }
+    assert payload["checks"]["wallet_portfolio"] == {
+        "ok": True,
+        "result": "wallet-portfolio:dry-run",
+    }
+    assert fake.portfolio_reads == 0
+    assert "live_registration" in payload["hard_stop"]
+
+
+def test_track1_preflight_run_read_only_uses_wallet_checks(
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    fake = FakeTwakAdapter
+    fake.instances = []
+    fake.portfolio_reads = 0
+    monkeypatch.setattr("defiquant.cli.TwakCliExecutionAdapter", fake)
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        ["defiquant", "track1-preflight", "--run-read-only"],
+    )
+
+    main()
+
+    payload = json.loads(capsys.readouterr().out)
+    read_instances = [instance for instance in fake.instances if not instance.dry_run]
+    assert payload["mode"] == "read_only"
+    assert payload["registration_dry_run"] == "register:dry-run"
+    assert payload["checks"]["auth_status"] == {
+        "ok": True,
+        "result": {"configured": True, "source": "file"},
+    }
+    assert payload["checks"]["wallet_address"]["result"] == {
+        "chain": "bsc",
+        "address": "0xPreflight",
+    }
+    assert payload["checks"]["wallet_portfolio"]["result"][0]["symbol"] == "USDT"
+    assert fake.portfolio_reads == 1
+    assert read_instances
+
+
 def test_execute_twak_live_requires_guard_conditions(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -240,6 +302,22 @@ class FakeTwakAdapter:
         self.dry_run = bool(kwargs.get("dry_run", True))
         self.quote_only = kwargs.get("quote_only")
         type(self).instances.append(self)
+
+    def register_competition(self) -> str:
+        return "register:dry-run" if self.dry_run else "register:live"
+
+    def auth_status(self) -> object:
+        if self.dry_run:
+            return "auth:dry-run"
+        return {"configured": True, "source": "file", "accessId": "redacted"}
+
+    def wallet_address(self) -> str:
+        if self.dry_run:
+            return "wallet-address:dry-run"
+        return '{"chain":"bsc","address":"0xPreflight"}'
+
+    def wallet_portfolio_preview(self) -> str:
+        return "wallet-portfolio:dry-run"
 
     def wallet_portfolio(self) -> list[dict[str, object]]:
         type(self).portfolio_reads += 1

@@ -15,6 +15,7 @@
 - Trade only symbols in `configs/eligible_tokens.json`.
 - Keep realized and mark-to-market drawdown below the risk gate.
 - Capture on-chain proof: BSC address, registration tx, and representative trade tx hashes.
+- Run `uv run defiquant track1-preflight --run-read-only` before requesting approval for live registration.
 
 ## Demo Evidence
 
