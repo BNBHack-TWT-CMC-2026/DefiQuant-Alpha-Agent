@@ -25,9 +25,13 @@ without executing trades.
 ## Local Commands
 
 ```powershell
+uv run defiquant signal --fixture --config configs/strategy.json
 uv run defiquant signal --config configs/strategy.json --cmc-days 90
 uv run defiquant backtest --config configs/strategy.json --cmc-days 90 --cmc-end-date 2026-06-12
 ```
+
+Use fixture mode for deterministic package review. Use CMC mode only when
+`CMC_API_KEY` is configured.
 
 ## Output Contract
 
@@ -47,3 +51,7 @@ Return JSON-compatible objects shaped like:
 This skill is Track 2 only. It must not call TWAK, sign transactions, place
 orders, or mutate any wallet state. Execution happens only through the Track 1
 adapter after the risk manager has produced a separate order plan.
+
+The package includes deterministic examples in `examples/` and submission notes
+in `SUBMISSION.md`. These files are part of the Track 2 bundle and must remain
+free of secrets, wallet commands, and live execution instructions.

@@ -41,6 +41,8 @@
 
 - CMC Skill package under `skills/cmc-defiquant`.
 - Executable Skill instructions in `skills/cmc-defiquant/SKILL.md`.
+- Submission notes and non-execution proof in `skills/cmc-defiquant/SUBMISSION.md`.
+- Fixture input/output examples under `skills/cmc-defiquant/examples`.
 - Backtestable strategy spec with no execution path.
 - Strategy rationale and risk limits documented.
 - Demo or walkthrough showing CMC data to target weights.

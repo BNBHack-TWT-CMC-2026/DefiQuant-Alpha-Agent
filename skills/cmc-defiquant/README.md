@@ -22,3 +22,9 @@ uv run defiquant backtest --config configs/strategy.json --cmc-days 90 --cmc-end
 
 The executable skill instructions are in [SKILL.md](SKILL.md). The JSON package
 metadata is in [skill.json](skill.json).
+
+Submission support files:
+
+- [SUBMISSION.md](SUBMISSION.md): Track 2 packaging notes and non-execution proof.
+- [examples/input.fixture.json](examples/input.fixture.json): deterministic sample input.
+- [examples/output.fixture.json](examples/output.fixture.json): deterministic target-weight output.

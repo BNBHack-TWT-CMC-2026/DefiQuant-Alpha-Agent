@@ -1,0 +1,17 @@
+{
+  "mode": "fixture",
+  "command": "uv run defiquant signal --fixture --config configs/strategy.json",
+  "universe": ["CAKE", "TWT", "AAVE", "LINK", "PENDLE", "USDT"],
+  "stable_symbol": "USDT",
+  "risk": {
+    "max_drawdown": 0.2,
+    "max_position_weight": 0.1,
+    "min_cash_weight": 0.3,
+    "max_daily_turnover": 0.25
+  },
+  "notes": [
+    "Fixture mode is deterministic for package review.",
+    "Production mode omits --fixture and reads CMC OHLCV through the configured API key.",
+    "Track 2 returns target weights only and never calls wallet or execution adapters."
+  ]
+}

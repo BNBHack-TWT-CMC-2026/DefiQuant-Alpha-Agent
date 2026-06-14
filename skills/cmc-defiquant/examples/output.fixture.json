@@ -1,0 +1,63 @@
+[
+  {
+    "symbol": "PENDLE",
+    "target_weight": 0.1,
+    "score": 0.08801153508096521,
+    "reasons": [
+      "momentum=-0.0671",
+      "trend=-0.0329",
+      "liquidity=0.7022",
+      "volatility=0.0060"
+    ]
+  },
+  {
+    "symbol": "LINK",
+    "target_weight": 0.1,
+    "score": 0.07453615990703032,
+    "reasons": [
+      "momentum=-0.0873",
+      "trend=-0.0409",
+      "liquidity=0.6959",
+      "volatility=0.0058"
+    ]
+  },
+  {
+    "symbol": "AAVE",
+    "target_weight": 0.1,
+    "score": 0.06199242750321737,
+    "reasons": [
+      "momentum=-0.1078",
+      "trend=-0.0455",
+      "liquidity=0.6886",
+      "volatility=0.0054"
+    ]
+  },
+  {
+    "symbol": "TWT",
+    "target_weight": 0.1,
+    "score": 0.05280796114454649,
+    "reasons": [
+      "momentum=-0.1171",
+      "trend=-0.0479",
+      "liquidity=0.6801",
+      "volatility=0.0069"
+    ]
+  },
+  {
+    "symbol": "CAKE",
+    "target_weight": 0.1,
+    "score": 0.045474816563994755,
+    "reasons": [
+      "momentum=-0.1229",
+      "trend=-0.0493",
+      "liquidity=0.6698",
+      "volatility=0.0082"
+    ]
+  },
+  {
+    "symbol": "USDT",
+    "target_weight": 0.5,
+    "score": 0.0,
+    "reasons": ["reserve=min_cash"]
+  }
+]
