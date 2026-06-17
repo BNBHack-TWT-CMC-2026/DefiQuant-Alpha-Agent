@@ -105,11 +105,13 @@ If a backend server is added, use FastAPI and run it through `uv run fastapi ...
 
 ## Strategy
 
-The initial model ranks eligible CMC-listed BNB Chain tokens using:
+The model ranks eligible CMC-listed BNB Chain tokens with an alpha pool:
 
 - medium-term momentum,
-- short/long moving-average trend,
-- liquidity preference,
+- short/long moving-average trend strength,
+- recent volume impulse,
+- liquidity depth,
+- short-term reversal and blowoff guard,
 - volatility penalty.
 
 Weights are inverse-volatility adjusted, capped per asset, and forced to keep a cash/stable reserve. If portfolio drawdown breaches the configured limit, the risk manager moves to cash-only mode.
@@ -181,7 +183,6 @@ MCP templates:
 
 Track 1 operations:
 
-- `docs/alpha_competition_loop.md`: read-only alpha mode decision loop.
 - `docs/prefunding_readiness.md`: safe checks before wallet funding.
 - `docs/track1_registration.md`: registration preflight and evidence capture.
 - `docs/track1_live_operations.md`: live-window operating loop and halt criteria.
