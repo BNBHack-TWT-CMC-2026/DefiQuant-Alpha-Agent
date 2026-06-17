@@ -8,6 +8,7 @@ from defiquant.leveraged_volume_impulse import (
     TenMinuteCandle,
     fixture_10m_market,
     load_10m_csv,
+    load_leveraged_volume_config,
     run_leveraged_volume_backtest,
 )
 
@@ -66,6 +67,16 @@ def test_csv_loader_reads_10m_candles(tmp_path) -> None:
 
     assert market["TEST"][0].close == 1.05
     assert market["TEST"][0].timestamp.tzinfo is not None
+
+
+def test_config_default_leverage_is_30x(tmp_path) -> None:
+    path = tmp_path / "strategy.json"
+    path.write_text('{"seed": 1000}', encoding="utf-8")
+
+    config = load_leveraged_volume_config(path)
+
+    assert LeveragedVolumeImpulseConfig().leverage == 30.0
+    assert config.leverage == 30.0
 
 
 def _market_with_spike(
