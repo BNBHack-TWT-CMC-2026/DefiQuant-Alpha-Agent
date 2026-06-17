@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import sys
 from datetime import UTC, datetime
+from pathlib import Path
 
 import pytest
 
@@ -33,7 +34,8 @@ def test_build_latest_evidence_comparison_outputs_safe_config_rows() -> None:
 
     assert evidence["generated_at_utc"] == "2026-06-17T00:00:00+00:00"
     assert evidence["config_count"] == 2
-    assert evidence["recommended_config_for_rehearsal"] in configs
+    assert evidence["highest_conviction_config_for_rehearsal"] in configs
+    assert "not live approval" in evidence["ranking_method"]
     assert evidence["configs"][0]["signals"]
     assert evidence["configs"][0]["orders"]
     assert evidence["configs"][0]["twak_dry_run"]["commands"][0].startswith("twak-dry-run:")
@@ -87,6 +89,32 @@ def test_frontier_evidence_cli_uses_one_latest_quote_snapshot(
         "frontier-return",
     }
     assert payload["safety"]["live_transaction"] is False
+
+
+def test_frontier_evidence_cli_rejects_incompatible_config_before_cmc_call(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    from defiquant.cli import main
+
+    raw = json.loads(Path("configs/strategy.frontier-risk.json").read_text(encoding="utf-8"))
+    raw["competition"]["eligible_tokens_path"] = str(Path("configs/eligible_tokens.json").resolve())
+    raw["universe"]["symbols"] = ["CAKE", "USDT"]
+    mismatched_path = tmp_path / "strategy.mismatched.json"
+    mismatched_path.write_text(json.dumps(raw), encoding="utf-8")
+
+    def fail_load_quotes(symbols: tuple[str, ...]) -> dict[str, dict[str, object]]:
+        raise AssertionError(f"CMC should not be called for incompatible configs: {symbols}")
+
+    monkeypatch.setattr("defiquant.cli.load_cmc_latest_quotes", fail_load_quotes)
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        ["defiquant", "frontier-evidence", "--configs", str(mismatched_path)],
+    )
+
+    with pytest.raises(ValueError, match="universe differs"):
+        main()
 
 
 def _quote(*, change_1h: float, change_24h: float, change_7d: float) -> dict[str, object]:

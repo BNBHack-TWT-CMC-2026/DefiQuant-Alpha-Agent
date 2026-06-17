@@ -662,13 +662,14 @@ def _build_frontier_evidence_payload(
     args: argparse.Namespace,
     config: AppConfig,
 ) -> dict[str, object]:
-    token_addresses = load_token_addresses(Path(_token_addresses_path(args)))
-    symbols = _latest_signal_symbols(config, token_addresses)
-    quotes = load_cmc_latest_quotes(symbols)
     config_paths = _config_paths(args.configs)
     configs = {path.stem.removeprefix("strategy."): load_config(path) for path in config_paths}
+    comparable_base = validate_research_config_compatibility({"base": config, **configs})
+    token_addresses = load_token_addresses(Path(_token_addresses_path(args)))
+    symbols = _latest_signal_symbols(comparable_base, token_addresses)
+    quotes = load_cmc_latest_quotes(symbols)
     return build_latest_evidence_comparison(
-        base_config=config,
+        base_config=comparable_base,
         configs=configs,
         quotes=quotes,
         token_addresses=token_addresses,

@@ -52,9 +52,14 @@ def build_latest_evidence_comparison(
         "generated_at_utc": timestamp.astimezone(UTC).isoformat(),
         "alpha_source": "coinmarketcap_latest_quotes",
         "purpose": "read_only_frontier_config_comparison",
+        "ranking_method": (
+            "order_count, risky_target_weight, total_notional_usd, "
+            "average_risky_signal_score, top_signal_score, smaller max_order_notional; "
+            "read-only rehearsal ranking, not live approval"
+        ),
         "universe_symbols": base_config.universe_symbols,
         "config_count": len(rows),
-        "recommended_config_for_rehearsal": ranked[0]["config"],
+        "highest_conviction_config_for_rehearsal": ranked[0]["config"],
         "comparison_summary": [row["summary"] | {"config": row["config"]} for row in ranked],
         "configs": rows,
         "safety": {
