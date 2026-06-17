@@ -26,7 +26,7 @@ class TenMinuteCandle:
 @dataclass(frozen=True)
 class LeveragedVolumeImpulseConfig:
     seed: float = 1000.0
-    leverage: float = 30.0
+    leverage: float = 50.0
     baseline_window: int = 12
     volume_spike_multiple: float = 10.0
     exit_volume_decreases: int = 3
@@ -91,7 +91,7 @@ def load_leveraged_volume_config(path: str | Path) -> LeveragedVolumeImpulseConf
     raw = json.loads(Path(path).read_text(encoding="utf-8"))
     return LeveragedVolumeImpulseConfig(
         seed=float(raw.get("seed", 1000.0)),
-        leverage=float(raw.get("leverage", 30.0)),
+        leverage=float(raw.get("leverage", 50.0)),
         baseline_window=int(raw.get("baseline_window", 12)),
         volume_spike_multiple=float(raw.get("volume_spike_multiple", 10.0)),
         exit_volume_decreases=int(raw.get("exit_volume_decreases", 3)),
