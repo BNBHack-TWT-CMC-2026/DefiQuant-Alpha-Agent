@@ -129,6 +129,8 @@ The model ranks eligible CMC-listed BNB Chain tokens with an alpha pool:
 - recent volume impulse,
 - liquidity depth,
 - short-term reversal and blowoff guard,
+- normalized trend angle,
+- ATR-based Supertrend alignment,
 - volatility penalty.
 
 Weights are inverse-volatility adjusted, capped per asset, and forced to keep a cash/stable reserve. If portfolio drawdown breaches the configured limit, the risk manager moves to cash-only mode.

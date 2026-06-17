@@ -25,6 +25,8 @@ It reuses the same alpha pool as Track 1:
 - `volume_impulse`
 - `liquidity_depth`
 - `short_reversal_guard`
+- `trend_angle`
+- `supertrend_alignment`
 - `volatility`
 
 ## Non-Execution Proof

@@ -8,7 +8,10 @@
     "trend_fast_days": 7,
     "trend_slow_days": 21,
     "top_n": 3,
-    "min_score": 0.0
+    "min_score": 0.0,
+    "trend_angle_days": 5,
+    "supertrend_period": 10,
+    "supertrend_multiplier": 3.0
   },
   "risk": {
     "max_drawdown": 0.2,

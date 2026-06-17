@@ -19,6 +19,8 @@ without executing trades.
    - recent volume impulse,
    - liquidity depth,
    - short-term reversal and blowoff guard,
+   - normalized trend angle,
+   - Supertrend alignment,
    - volatility penalty.
 4. Apply risk guardrails:
    - max drawdown circuit breaker,
@@ -55,6 +57,8 @@ Return JSON-compatible objects shaped like:
     "volume_impulse=0.0123",
     "liquidity_depth=0.6950",
     "short_reversal_guard=0.0000",
+    "trend_angle=-0.3552",
+    "supertrend_alignment=-1.0000",
     "volatility=0.0060"
   ]
 }

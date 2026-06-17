@@ -41,6 +41,9 @@ def test_track2_fixture_input_matches_strategy_config() -> None:
         "trend_slow_days": config.strategy.trend_slow_days,
         "top_n": config.strategy.top_n,
         "min_score": config.strategy.min_score,
+        "trend_angle_days": config.strategy.trend_angle_days,
+        "supertrend_period": config.strategy.supertrend_period,
+        "supertrend_multiplier": config.strategy.supertrend_multiplier,
     }
     assert payload["risk"] == {
         "max_drawdown": config.risk.max_drawdown,

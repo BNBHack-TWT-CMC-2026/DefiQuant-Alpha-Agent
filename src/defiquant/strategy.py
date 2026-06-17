@@ -3,7 +3,7 @@ from __future__ import annotations
 from math import log
 
 from defiquant.config import StrategyConfig
-from defiquant.indicators import moving_average, volatility
+from defiquant.indicators import moving_average, supertrend_alignment, trend_angle, volatility
 from defiquant.models import Candle, MarketData, Signal
 
 
@@ -29,6 +29,12 @@ class MomentumLiquidityStrategy:
             slow = moving_average(prices, self.config.trend_slow_days)
             trend_strength = _safe_return(slow, fast)
             vol = volatility(prices[-self.config.lookback_days - 1 :])
+            angle = trend_angle(prices, self.config.trend_angle_days)
+            supertrend = supertrend_alignment(
+                clean,
+                period=self.config.supertrend_period,
+                multiplier=self.config.supertrend_multiplier,
+            )
             liquidity_depth = log(max(1.0, _average(volumes))) / 20.0
             volume_impulse = _volume_impulse(clean, self.config.lookback_days)
             short_reversal_guard = _short_reversal_guard(prices)
@@ -39,6 +45,8 @@ class MomentumLiquidityStrategy:
                 + (weights.volume_impulse * volume_impulse)
                 + (weights.liquidity_depth * liquidity_depth)
                 + (weights.short_reversal_guard * short_reversal_guard)
+                + (weights.trend_angle * angle)
+                + (weights.supertrend_alignment * supertrend)
                 - (weights.volatility_penalty * vol)
             )
             reasons = (
@@ -47,6 +55,8 @@ class MomentumLiquidityStrategy:
                 f"volume_impulse={volume_impulse:.4f}",
                 f"liquidity_depth={liquidity_depth:.4f}",
                 f"short_reversal_guard={short_reversal_guard:.4f}",
+                f"trend_angle={angle:.4f}",
+                f"supertrend_alignment={supertrend:.4f}",
                 f"volatility={vol:.4f}",
             )
             if score >= self.config.min_score:

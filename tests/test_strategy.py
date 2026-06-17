@@ -45,4 +45,6 @@ def test_strategy_reports_alpha_pool_components() -> None:
     assert "volume_impulse=" in reasons
     assert "liquidity_depth=" in reasons
     assert "short_reversal_guard=" in reasons
+    assert "trend_angle=" in reasons
+    assert "supertrend_alignment=" in reasons
     assert "volatility=" in reasons

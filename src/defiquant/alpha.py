@@ -222,6 +222,7 @@ def _score_quote_for_strategy(
     volume_impulse = min(1.0, log10(volume_24h + 1.0) / 10.0)
     liquidity_depth = min(1.0, log10(max(volume_24h, market_cap) + 1.0) / 12.0)
     short_reversal_guard = _latest_reversal_guard(change_1h)
+    trend_angle = _latest_trend_angle(change_7d)
     volatility_proxy = (abs(change_1h) + abs(change_24h) + (abs(change_7d) / 7.0)) / 10.0
     downside_penalty = (max(0.0, -change_24h) * 0.70) + (max(0.0, -change_7d) * 0.30)
     weights = config.alpha_weights
@@ -231,6 +232,7 @@ def _score_quote_for_strategy(
         + (weights.volume_impulse * volume_impulse)
         + (weights.liquidity_depth * liquidity_depth)
         + (weights.short_reversal_guard * short_reversal_guard)
+        + (weights.trend_angle * trend_angle)
         - (weights.volatility_penalty * volatility_proxy)
         - downside_penalty
     )
@@ -252,6 +254,8 @@ def _score_quote_for_strategy(
             f"volume_impulse={volume_impulse:.4f}",
             f"liquidity_depth={liquidity_depth:.4f}",
             f"short_reversal_guard={short_reversal_guard:.4f}",
+            f"trend_angle={trend_angle:.4f}",
+            "supertrend_alignment=unavailable_latest_quote",
             f"volatility_proxy={volatility_proxy:.4f}",
             f"downside_penalty={downside_penalty:.4f}",
         ],
@@ -263,6 +267,11 @@ def _latest_reversal_guard(one_hour_return: float) -> float:
     blowoff_penalty = max(0.0, one_hour_return - 0.04)
     crash_penalty = max(0.0, -one_hour_return - 0.08) * 2.00
     return pullback_bonus - blowoff_penalty - crash_penalty
+
+
+def _latest_trend_angle(seven_day_return: float) -> float:
+    daily_slope = seven_day_return / 7.0
+    return min(1.0, max(-1.0, daily_slope * 10.0))
 
 
 def _recommend_mode(

@@ -16,6 +16,8 @@ class AlphaWeights:
     liquidity_depth: float = 0.20
     short_reversal_guard: float = 0.005
     volatility_penalty: float = 1.55
+    trend_angle: float = 0.0
+    supertrend_alignment: float = 0.0
 
 
 @dataclass(frozen=True)
@@ -27,6 +29,9 @@ class StrategyConfig:
     min_score: float
     stable_symbol: str
     alpha_weights: AlphaWeights = field(default_factory=AlphaWeights)
+    trend_angle_days: int = 5
+    supertrend_period: int = 10
+    supertrend_multiplier: float = 3.0
 
 
 @dataclass(frozen=True)

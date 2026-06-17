@@ -9,6 +9,8 @@
       "volume_impulse=0.0131",
       "liquidity_depth=0.7022",
       "short_reversal_guard=0.0000",
+      "trend_angle=0.0368",
+      "supertrend_alignment=1.0000",
       "volatility=0.0060"
     ]
   },
@@ -22,6 +24,8 @@
       "volume_impulse=0.0149",
       "liquidity_depth=0.6959",
       "short_reversal_guard=0.0001",
+      "trend_angle=-0.2384",
+      "supertrend_alignment=1.0000",
       "volatility=0.0058"
     ]
   },
@@ -35,6 +39,8 @@
       "volume_impulse=0.0172",
       "liquidity_depth=0.6886",
       "short_reversal_guard=0.0012",
+      "trend_angle=-0.4167",
+      "supertrend_alignment=-1.0000",
       "volatility=0.0054"
     ]
   },

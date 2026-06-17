@@ -51,6 +51,8 @@ def test_cmc_skill_fixture_output_uses_alpha_pool_reasons() -> None:
         "volume_impulse",
         "liquidity_depth",
         "short_reversal_guard",
+        "trend_angle",
+        "supertrend_alignment",
         "volatility",
     }
 

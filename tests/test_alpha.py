@@ -59,6 +59,8 @@ def test_latest_quote_signals_use_positive_tradable_quote_alpha() -> None:
     assert abs(sum(signal.target_weight for signal in signals) - 1.0) < 0.000001
     assert "latest_quote_alpha=" in " ".join(signals[0].reasons)
     assert "medium_momentum=" in " ".join(signals[0].reasons)
+    assert "trend_angle=" in " ".join(signals[0].reasons)
+    assert "supertrend_alignment=unavailable_latest_quote" in " ".join(signals[0].reasons)
 
 
 def test_latest_quote_signals_fall_back_to_stable_when_no_positive_alpha() -> None:
