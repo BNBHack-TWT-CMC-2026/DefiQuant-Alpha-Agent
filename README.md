@@ -47,6 +47,7 @@ Scan current CMC quotes for the Track 1 alpha mode decision:
 uv run defiquant scan-alpha --symbols-source tradable --top 10
 uv run defiquant scan-alpha --symbols-source eligible --top 15
 uv run defiquant signal --config configs/strategy.aggressive.json --alpha-source latest
+uv run defiquant signal --config configs/strategy.tournament.json --alpha-source latest --token-addresses configs/token_addresses.bsc.tournament.json
 uv run defiquant alpha-evidence --mode auto --top 10
 uv run defiquant frontier-evidence --portfolio-cash 1000
 ```
@@ -63,6 +64,7 @@ Dry-run a TWAK execution plan:
 ```powershell
 uv run defiquant execute --config configs/strategy.json --cmc-days 90 --adapter twak --dry-run
 uv run defiquant execute --config configs/strategy.aggressive.json --alpha-source latest --adapter twak --portfolio twak --validate-quotes --dry-run
+uv run defiquant execute --config configs/strategy.tournament.json --alpha-source latest --token-addresses configs/token_addresses.bsc.tournament.json --adapter twak --portfolio twak --validate-quotes --dry-run
 ```
 
 Run the full local check:
@@ -146,6 +148,12 @@ promotable flag for conservative promotion review.
 Frontier configs from the current lab are available as
 `configs/strategy.frontier-risk.json`, `configs/strategy.frontier-return.json`,
 and `configs/strategy.frontier-lowdrawdown.json`.
+
+`configs/strategy.tournament.json` is a separate opt-in Track 1 lane for the
+live competition window. It uses a broader CMC-discovered BSC token address map
+in `configs/token_addresses.bsc.tournament.json`, raises capital deployment, and
+should be used only after latest-quote dry-run and TWAK quote validation. It
+does not replace the default strategy or the non-executing Track 2 Skill path.
 
 ## Competition Rules Captured
 

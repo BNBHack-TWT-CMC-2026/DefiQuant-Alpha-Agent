@@ -82,6 +82,18 @@ Then choose one of the reviewed mode configs:
 - `configs/strategy.frontier-risk.json`
 - `configs/strategy.frontier-return.json`
 - `configs/strategy.frontier-lowdrawdown.json`
+- `configs/strategy.tournament.json`
+
+The tournament lane also requires its broader verified BSC address map:
+
+```powershell
+uv run defiquant signal --config configs/strategy.tournament.json --alpha-source latest --token-addresses configs/token_addresses.bsc.tournament.json
+uv run defiquant execute --config configs/strategy.tournament.json --alpha-source latest --token-addresses configs/token_addresses.bsc.tournament.json --adapter twak --portfolio twak --validate-quotes --dry-run
+```
+
+Use `strategy.tournament.json` only when the explicit goal is Track 1 prize
+PnL, the latest quote scan still supports the selected tokens, and the planned
+batch stays inside the approved live notional cap.
 
 The only allowed live execution shape is:
 
@@ -92,7 +104,9 @@ uv run defiquant execute --config configs/strategy.<selected>.json --alpha-sourc
 Replace `<selected>` with a reviewed config suffix only after the matching
 dry-run and quote validation have been captured. For the first approved smoke
 trade, prefer `defensive` or `frontier-risk` unless the approval explicitly
-names a different mode and cap.
+names a different mode and cap. If the selected config is `tournament`, include
+`--token-addresses configs/token_addresses.bsc.tournament.json` in the live
+command as well.
 
 The default `signal` and `execute` path still uses daily OHLCV candles. The
 `--alpha-source latest` path is a Track 1 execution overlay for current CMC
