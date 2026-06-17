@@ -31,3 +31,18 @@ def test_signals_sum_to_one_after_risk() -> None:
         signal.target_weight <= config.risk.max_position_weight or signal.symbol == "USDT"
         for signal in signals
     )
+
+
+def test_strategy_reports_alpha_pool_components() -> None:
+    config = load_config(Path(__file__).resolve().parents[1] / "configs" / "strategy.json")
+    market = fixture_market(config.universe_symbols)
+    signals = MomentumLiquidityStrategy(config.strategy).generate(market)
+    non_cash = next(signal for signal in signals if signal.symbol != config.strategy.stable_symbol)
+
+    reasons = " ".join(non_cash.reasons)
+    assert "medium_momentum=" in reasons
+    assert "trend_strength=" in reasons
+    assert "volume_impulse=" in reasons
+    assert "liquidity_depth=" in reasons
+    assert "short_reversal_guard=" in reasons
+    assert "volatility=" in reasons
