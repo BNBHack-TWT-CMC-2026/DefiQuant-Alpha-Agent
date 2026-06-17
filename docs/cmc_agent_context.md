@@ -49,6 +49,18 @@ limit and explicit approval for the wallet/client being charged.
 Use `configs/cmc_agent_context.json` as the source of truth for the read-only
 prompt template.
 
+Generate the local evidence packet without calling CMC MCP:
+
+```powershell
+uv run defiquant cmc-context-packet --config configs/strategy.json
+```
+
+Optional focused symbol set:
+
+```powershell
+uv run defiquant cmc-context-packet --symbols CAKE,TWT,AAVE
+```
+
 Template intent:
 
 ```text
@@ -85,7 +97,7 @@ operator evidence. It must not change:
 For a DoraHacks demo or Track 2 walkthrough, capture:
 
 - CMC REST command and output hash or summary,
-- CMC MCP prompt used,
+- generated CMC MCP prompt packet,
 - CMC MCP context JSON,
 - final `defiquant signal` output,
 - note that no wallet or TWAK command was called.

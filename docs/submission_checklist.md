@@ -24,6 +24,7 @@
 - Show `scan-alpha` latest-quote mode selection and the three reviewed strategy modes.
 - Show CMC Agent Hub MCP configuration from `configs/mcp/cmc-mcp.json`.
 - Show CMC Agent Hub read-only context template from `configs/cmc_agent_context.json`.
+- Show generated CMC Agent Hub prompt packet from `uv run defiquant cmc-context-packet`.
 - Show CMC x402 MCP configuration from `configs/mcp/cmc-x402.json` if the wallet/client is funded.
 - Show TWAK as the execution/signing layer.
 - Show TWAK MCP configuration from `configs/mcp/twak.json`.

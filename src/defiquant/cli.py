@@ -13,6 +13,7 @@ from defiquant.agent_profile import build_agent_profile
 from defiquant.alpha import load_alpha_modes, load_token_addresses, scan_alpha_quotes
 from defiquant.backtest import Backtester
 from defiquant.bnb_agent import preview_bnb_registration, register_bnb_agent
+from defiquant.cmc_agent_context import build_cmc_agent_context_packet
 from defiquant.config import AppConfig, load_config, to_jsonable
 from defiquant.data.cmc import DEFAULT_CMC_HISTORY_DAYS, load_cmc_latest_quotes, load_cmc_market
 from defiquant.data.fixtures import fixture_market
@@ -54,6 +55,15 @@ def main() -> None:
         help="Symbol set to scan with CMC latest quotes.",
     )
     scan_alpha.add_argument("--top", type=int, default=10)
+
+    cmc_context_packet = subparsers.add_parser("cmc-context-packet")
+    cmc_context_packet.add_argument("--config", default="configs/strategy.json")
+    cmc_context_packet.add_argument("--context", default="configs/cmc_agent_context.json")
+    cmc_context_packet.add_argument(
+        "--symbols",
+        default="",
+        help="Optional comma-separated symbols. Defaults to the configured universe.",
+    )
 
     execute = subparsers.add_parser("execute")
     _add_market_args(execute)
@@ -229,6 +239,19 @@ def main() -> None:
         )
         return
 
+    if args.command == "cmc-context-packet":
+        print(
+            json.dumps(
+                build_cmc_agent_context_packet(
+                    config,
+                    context_path=args.context,
+                    symbols=_optional_symbols(args.symbols),
+                ),
+                indent=2,
+            )
+        )
+        return
+
     if args.command == "execute" and args.adapter == "twak" and not args.dry_run:
         _validate_twak_live_static_args(args)
 
@@ -375,6 +398,13 @@ def _alpha_symbols(
             if symbol.upper() in token_addresses or symbol == config.strategy.stable_symbol
         )
     return tuple(sorted(config.eligible_symbols))
+
+
+def _optional_symbols(value: str) -> tuple[str, ...] | None:
+    if not value.strip():
+        return None
+    symbols = tuple(symbol.strip().upper() for symbol in value.split(",") if symbol.strip())
+    return symbols or None
 
 
 def _load_portfolio(
