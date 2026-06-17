@@ -53,6 +53,13 @@ def test_alpha_lab_report_ranks_candidates_on_fixture() -> None:
     assert report["candidate_count"] == 25
     assert report["recommended_candidate"]
     assert report["baseline"]["candidate"] == "baseline"
+    assert set(report["frontiers"]) == {
+        "best_risk_adjusted",
+        "best_minimum_return",
+        "best_average_return",
+        "lowest_drawdown",
+    }
+    assert "average_total_return" in report["frontiers"]["best_average_return"]
     assert len(report["top_candidates"]) == 5
     assert all("alpha_weights" in item for item in report["top_candidates"])
 
@@ -83,4 +90,5 @@ def test_alpha_lab_cli_outputs_fixture_report(
 
     payload = json.loads(capsys.readouterr().out)
     assert payload["candidate_count"] == 25
+    assert "frontiers" in payload
     assert len(payload["top_candidates"]) == 3

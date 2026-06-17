@@ -135,6 +135,10 @@ same risk manager and TWAK guards, but it is intentionally excluded from
 historical backtests because latest quote data is not a deterministic OHLCV
 series.
 
+Use `alpha-lab` to run deterministic alpha-weight sweeps. Its report separates
+risk-adjusted, minimum-return, average-return, and lowest-drawdown frontiers so
+candidate promotion is not based on a single overfit score.
+
 ## Competition Rules Captured
 
 - Track 1 on-chain registration must happen before `2026-06-22T00:00:00Z`.

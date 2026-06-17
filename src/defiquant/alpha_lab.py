@@ -117,6 +117,7 @@ def build_alpha_lab_report(
         "candidate_count": len(candidates),
         "recommended_candidate": ranked[0]["candidate"],
         "baseline": baseline,
+        "frontiers": _frontiers(ranked),
         "top_candidates": ranked[: max(1, top)],
     }
 
@@ -140,6 +141,10 @@ def _evaluate_candidate(
             sum(float(row["risk_adjusted_score"]) for row in window_results) / len(window_results),
             8,
         ),
+        "average_total_return": round(
+            sum(float(row["total_return"]) for row in window_results) / len(window_results),
+            8,
+        ),
         "minimum_total_return": round(
             min(float(row["total_return"]) for row in window_results),
             8,
@@ -153,6 +158,67 @@ def _evaluate_candidate(
             int(row["qualified_trade_days"]) for row in window_results
         ),
         "window_results": window_results,
+    }
+
+
+def _frontiers(results: list[dict[str, Any]]) -> dict[str, Any]:
+    return {
+        "best_risk_adjusted": _frontier_item(
+            max(
+                results,
+                key=lambda item: (
+                    item["eligible_windows"],
+                    item["average_risk_adjusted_score"],
+                    item["minimum_total_return"],
+                    -item["worst_max_drawdown"],
+                ),
+            )
+        ),
+        "best_minimum_return": _frontier_item(
+            max(
+                results,
+                key=lambda item: (
+                    item["eligible_windows"],
+                    item["minimum_total_return"],
+                    item["average_risk_adjusted_score"],
+                    -item["worst_max_drawdown"],
+                ),
+            )
+        ),
+        "best_average_return": _frontier_item(
+            max(
+                results,
+                key=lambda item: (
+                    item["eligible_windows"],
+                    item["average_total_return"],
+                    item["minimum_total_return"],
+                    -item["worst_max_drawdown"],
+                ),
+            )
+        ),
+        "lowest_drawdown": _frontier_item(
+            max(
+                results,
+                key=lambda item: (
+                    item["eligible_windows"],
+                    -item["worst_max_drawdown"],
+                    item["average_risk_adjusted_score"],
+                    item["minimum_total_return"],
+                ),
+            )
+        ),
+    }
+
+
+def _frontier_item(item: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "candidate": item["candidate"],
+        "eligible_windows": item["eligible_windows"],
+        "average_risk_adjusted_score": item["average_risk_adjusted_score"],
+        "average_total_return": item["average_total_return"],
+        "minimum_total_return": item["minimum_total_return"],
+        "worst_max_drawdown": item["worst_max_drawdown"],
+        "alpha_weights": item["alpha_weights"],
     }
 
 
