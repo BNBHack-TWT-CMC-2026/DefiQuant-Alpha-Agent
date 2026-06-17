@@ -71,10 +71,14 @@ def test_alpha_lab_report_ranks_candidates_on_fixture() -> None:
         "best_minimum_return",
         "best_average_return",
         "lowest_drawdown",
+        "most_robust",
     }
     assert "average_total_return" in report["frontiers"]["best_average_return"]
+    assert "robustness_score" in report["frontiers"]["most_robust"]
     assert len(report["top_candidates"]) == 5
     assert all("alpha_weights" in item for item in report["top_candidates"])
+    assert all("promotable" in item for item in report["top_candidates"])
+    assert all("drawdown_headroom" in item for item in report["top_candidates"])
 
 
 def test_alpha_lab_cli_outputs_fixture_report(
@@ -104,4 +108,5 @@ def test_alpha_lab_cli_outputs_fixture_report(
     payload = json.loads(capsys.readouterr().out)
     assert payload["candidate_count"] == 25
     assert "frontiers" in payload
+    assert "most_robust" in payload["frontiers"]
     assert len(payload["top_candidates"]) == 3

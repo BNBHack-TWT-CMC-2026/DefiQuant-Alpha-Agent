@@ -132,27 +132,48 @@ def _evaluate_candidate(
         _evaluate_window(config, strategy_config, window_days, market)
         for window_days, market in sorted(markets_by_window.items())
     ]
+    eligible_windows = sum(1 for row in window_results if row["eligible"])
+    positive_return_windows = sum(1 for row in window_results if row["total_return"] > 0)
+    risk_adjusted_scores = [float(row["risk_adjusted_score"]) for row in window_results]
+    total_returns = [float(row["total_return"]) for row in window_results]
+    max_drawdowns = [float(row["max_drawdown"]) for row in window_results]
+    minimum_total_return = min(total_returns)
+    worst_max_drawdown = max(max_drawdowns)
+    minimum_risk_adjusted_score = min(risk_adjusted_scores)
+    risk_adjusted_score_range = max(risk_adjusted_scores) - minimum_risk_adjusted_score
+    drawdown_headroom = config.risk.max_drawdown - worst_max_drawdown
+    promotable = (
+        eligible_windows == len(window_results)
+        and positive_return_windows == len(window_results)
+        and drawdown_headroom > 0
+    )
+    robustness_score = _robustness_score(
+        minimum_total_return=minimum_total_return,
+        minimum_risk_adjusted_score=minimum_risk_adjusted_score,
+        risk_adjusted_score_range=risk_adjusted_score_range,
+        worst_max_drawdown=worst_max_drawdown,
+    )
     return {
         "candidate": candidate.name,
         "alpha_weights": _weights_dict(candidate.weights),
-        "eligible_windows": sum(1 for row in window_results if row["eligible"]),
+        "eligible_windows": eligible_windows,
         "total_windows": len(window_results),
+        "positive_return_windows": positive_return_windows,
         "average_risk_adjusted_score": round(
-            sum(float(row["risk_adjusted_score"]) for row in window_results) / len(window_results),
+            sum(risk_adjusted_scores) / len(window_results),
             8,
         ),
         "average_total_return": round(
-            sum(float(row["total_return"]) for row in window_results) / len(window_results),
+            sum(total_returns) / len(window_results),
             8,
         ),
-        "minimum_total_return": round(
-            min(float(row["total_return"]) for row in window_results),
-            8,
-        ),
-        "worst_max_drawdown": round(
-            max(float(row["max_drawdown"]) for row in window_results),
-            8,
-        ),
+        "minimum_total_return": round(minimum_total_return, 8),
+        "worst_max_drawdown": round(worst_max_drawdown, 8),
+        "minimum_risk_adjusted_score": round(minimum_risk_adjusted_score, 8),
+        "risk_adjusted_score_range": round(risk_adjusted_score_range, 8),
+        "drawdown_headroom": round(drawdown_headroom, 8),
+        "promotable": promotable,
+        "robustness_score": round(robustness_score, 8),
         "total_trades": sum(int(row["trades"]) for row in window_results),
         "minimum_qualified_trade_days": min(
             int(row["qualified_trade_days"]) for row in window_results
@@ -207,6 +228,18 @@ def _frontiers(results: list[dict[str, Any]]) -> dict[str, Any]:
                 ),
             )
         ),
+        "most_robust": _frontier_item(
+            max(
+                results,
+                key=lambda item: (
+                    item["promotable"],
+                    item["eligible_windows"],
+                    item["robustness_score"],
+                    item["minimum_total_return"],
+                    -item["worst_max_drawdown"],
+                ),
+            )
+        ),
     }
 
 
@@ -218,6 +251,12 @@ def _frontier_item(item: dict[str, Any]) -> dict[str, Any]:
         "average_total_return": item["average_total_return"],
         "minimum_total_return": item["minimum_total_return"],
         "worst_max_drawdown": item["worst_max_drawdown"],
+        "minimum_risk_adjusted_score": item["minimum_risk_adjusted_score"],
+        "risk_adjusted_score_range": item["risk_adjusted_score_range"],
+        "drawdown_headroom": item["drawdown_headroom"],
+        "positive_return_windows": item["positive_return_windows"],
+        "promotable": item["promotable"],
+        "robustness_score": item["robustness_score"],
         "alpha_weights": item["alpha_weights"],
     }
 
@@ -265,6 +304,21 @@ def _weights_dict(weights: AlphaWeights) -> dict[str, float]:
         "short_reversal_guard": weights.short_reversal_guard,
         "volatility_penalty": weights.volatility_penalty,
     }
+
+
+def _robustness_score(
+    *,
+    minimum_total_return: float,
+    minimum_risk_adjusted_score: float,
+    risk_adjusted_score_range: float,
+    worst_max_drawdown: float,
+) -> float:
+    return (
+        minimum_risk_adjusted_score
+        + minimum_total_return
+        - (0.25 * risk_adjusted_score_range)
+        - (0.50 * worst_max_drawdown)
+    )
 
 
 def _risk_adjusted_score(result: BacktestResult) -> float:

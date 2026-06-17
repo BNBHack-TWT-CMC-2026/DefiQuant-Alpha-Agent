@@ -136,8 +136,10 @@ historical backtests because latest quote data is not a deterministic OHLCV
 series.
 
 Use `alpha-lab` to run deterministic alpha-weight sweeps. Its report separates
-risk-adjusted, minimum-return, average-return, and lowest-drawdown frontiers so
-candidate promotion is not based on a single overfit score.
+risk-adjusted, minimum-return, average-return, lowest-drawdown, and robustness
+frontiers so candidate promotion is not based on a single overfit score. Each
+candidate also reports positive-return windows, drawdown headroom, and a
+promotable flag for conservative promotion review.
 
 Frontier configs from the current lab are available as
 `configs/strategy.frontier-risk.json`, `configs/strategy.frontier-return.json`,
