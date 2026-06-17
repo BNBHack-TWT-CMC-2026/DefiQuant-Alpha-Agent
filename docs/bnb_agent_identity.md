@@ -31,6 +31,30 @@ The output should include:
 Archive the preview output with the DoraHacks evidence bundle. Replace
 `https://example.com` with the final demo endpoint before submission.
 
+## Local Read-Only Endpoint
+
+The public URL should serve the same read-only payloads that the CLI previews.
+Run the local endpoint before choosing a hosting target:
+
+```powershell
+$env:DEFIQUANT_AGENT_URL="http://127.0.0.1:8000"
+$env:DEFIQUANT_WALLET_ADDRESS="0x9206D8416A11c5E54427fE5f226B3Ed384a266Cc"
+$env:DEFIQUANT_NETWORK="bsc-testnet"
+$env:PYTHONUTF8="1"
+uv run fastapi dev src/defiquant/server.py
+```
+
+Check:
+
+```powershell
+Invoke-RestMethod http://127.0.0.1:8000/health
+Invoke-RestMethod http://127.0.0.1:8000/erc8183/status
+```
+
+The endpoint is metadata-only. It must not call CMC, TWAK, x402, or BNB Agent
+SDK during request handling. Final hosting and the resulting public URL remain a
+manual gate.
+
 ## Live Registration Hard Stop
 
 BNB Agent SDK live registration is an on-chain identity action. Do not run it

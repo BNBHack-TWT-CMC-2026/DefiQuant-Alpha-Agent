@@ -128,6 +128,25 @@ Prepare the endpoint payloads before hosting the final public URL:
 uv run defiquant agent-endpoints --config configs/strategy.json --agent-url https://example.com --wallet-address 0x9206D8416A11c5E54427fE5f226B3Ed384a266Cc --network bsc-testnet
 ```
 
+Run the read-only HTTP endpoint locally:
+
+```powershell
+$env:DEFIQUANT_AGENT_URL="http://127.0.0.1:8000"
+$env:DEFIQUANT_WALLET_ADDRESS="0x9206D8416A11c5E54427fE5f226B3Ed384a266Cc"
+$env:DEFIQUANT_NETWORK="bsc-testnet"
+$env:PYTHONUTF8="1"
+uv run fastapi dev src/defiquant/server.py
+```
+
+Available routes:
+
+- `GET /health`
+- `GET /erc8183/status`
+
+These routes return static profile/status metadata from the local config. They
+do not call CMC, TWAK, x402, or BNB Agent SDK, and they do not accept wallet
+secrets.
+
 Install the optional SDK only after live registration is explicitly approved:
 
 ```powershell
