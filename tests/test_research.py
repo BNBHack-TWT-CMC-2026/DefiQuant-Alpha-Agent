@@ -68,3 +68,29 @@ def test_research_report_cli_outputs_fixture_report(
     assert payload["recommended_config"] in {"aggressive", "defensive"}
     assert len(payload["summary"]) == 2
     assert len(payload["window_results"]) == 4
+
+
+def test_research_report_cli_defaults_include_frontier_configs(
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    from defiquant.cli import main
+
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        ["defiquant", "research-report", "--fixture", "--windows", "30"],
+    )
+
+    main()
+
+    payload = json.loads(capsys.readouterr().out)
+    configs = {row["config"] for row in payload["summary"]}
+    assert {
+        "aggressive",
+        "balanced",
+        "defensive",
+        "frontier-risk",
+        "frontier-return",
+        "frontier-lowdrawdown",
+    }.issubset(configs)

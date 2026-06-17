@@ -79,6 +79,9 @@ Then choose one of the reviewed mode configs:
 - `configs/strategy.aggressive.json`
 - `configs/strategy.balanced.json`
 - `configs/strategy.defensive.json`
+- `configs/strategy.frontier-risk.json`
+- `configs/strategy.frontier-return.json`
+- `configs/strategy.frontier-lowdrawdown.json`
 
 The only allowed live execution shape is:
 
@@ -86,10 +89,10 @@ The only allowed live execution shape is:
 uv run defiquant execute --config configs/strategy.<selected>.json --alpha-source latest --adapter twak --portfolio twak --validate-quotes --live --confirm-live I_UNDERSTAND_TWAK_LIVE_SWAP_RISK --max-live-notional-usd 1
 ```
 
-Replace `<selected>` with `aggressive`, `balanced`, or `defensive` only after
-the matching dry-run and quote validation have been captured. For the first
-approved smoke trade, prefer `defensive` unless the approval explicitly names a
-different mode and cap.
+Replace `<selected>` with a reviewed config suffix only after the matching
+dry-run and quote validation have been captured. For the first approved smoke
+trade, prefer `defensive` or `frontier-risk` unless the approval explicitly
+names a different mode and cap.
 
 The default `signal` and `execute` path still uses daily OHLCV candles. The
 `--alpha-source latest` path is a Track 1 execution overlay for current CMC

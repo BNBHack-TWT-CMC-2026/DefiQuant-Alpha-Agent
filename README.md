@@ -139,6 +139,10 @@ Use `alpha-lab` to run deterministic alpha-weight sweeps. Its report separates
 risk-adjusted, minimum-return, average-return, and lowest-drawdown frontiers so
 candidate promotion is not based on a single overfit score.
 
+Frontier configs from the current lab are available as
+`configs/strategy.frontier-risk.json`, `configs/strategy.frontier-return.json`,
+and `configs/strategy.frontier-lowdrawdown.json`.
+
 ## Competition Rules Captured
 
 - Track 1 on-chain registration must happen before `2026-06-22T00:00:00Z`.

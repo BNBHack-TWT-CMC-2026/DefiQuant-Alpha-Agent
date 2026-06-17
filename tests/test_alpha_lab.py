@@ -16,6 +16,19 @@ def test_strategy_config_uses_default_alpha_weights() -> None:
     assert config.strategy.alpha_weights == AlphaWeights()
 
 
+def test_frontier_strategy_configs_load_alpha_weights() -> None:
+    risk_config = load_config("configs/strategy.frontier-risk.json")
+    return_config = load_config("configs/strategy.frontier-return.json")
+    lowdrawdown_config = load_config("configs/strategy.frontier-lowdrawdown.json")
+
+    assert risk_config.strategy.alpha_weights.medium_momentum == 0.2
+    assert risk_config.strategy.alpha_weights.volatility_penalty == 1.4
+    assert return_config.strategy.alpha_weights.medium_momentum == 0.8
+    assert return_config.strategy.alpha_weights.volatility_penalty == 0.8
+    assert lowdrawdown_config.strategy.alpha_weights.trend_strength == 0.15
+    assert lowdrawdown_config.strategy.alpha_weights.volatility_penalty == 1.7
+
+
 def test_alpha_lab_generates_at_least_1000_deterministic_candidates() -> None:
     candidates = generate_alpha_weight_candidates(1000)
 

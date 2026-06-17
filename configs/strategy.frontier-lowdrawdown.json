@@ -1,0 +1,43 @@
+{
+  "strategy": {
+    "lookback_days": 14,
+    "trend_fast_days": 7,
+    "trend_slow_days": 21,
+    "top_n": 3,
+    "min_score": 0.0,
+    "stable_symbol": "USDT",
+    "alpha_weights": {
+      "medium_momentum": 0.2,
+      "trend_strength": 0.15,
+      "volume_impulse": 0.005,
+      "liquidity_depth": 0.0,
+      "short_reversal_guard": 0.0,
+      "volatility_penalty": 1.7
+    }
+  },
+  "risk": {
+    "max_drawdown": 0.2,
+    "max_position_weight": 0.07,
+    "min_cash_weight": 0.5,
+    "max_daily_turnover": 0.12,
+    "fee_bps": 15,
+    "slippage_bps": 20
+  },
+  "backtest": {
+    "initial_cash": 10000,
+    "rebalance_every_days": 1
+  },
+  "competition": {
+    "eligible_tokens_path": "eligible_tokens.json",
+    "registration_deadline_utc": "2026-06-22T00:00:00Z",
+    "track2_submission_deadline_utc": "2026-06-21T23:59:59Z",
+    "live_trading_start_utc": "2026-06-22T00:00:00Z",
+    "live_trading_end_utc": "2026-06-28T23:59:59Z",
+    "min_trades_per_day": 1,
+    "min_total_trade_days": 7,
+    "min_starting_in_scope_value_usd": 1.01
+  },
+  "universe": {
+    "symbols": ["CAKE", "TWT", "AAVE", "LINK", "PENDLE", "USDT"]
+  }
+}

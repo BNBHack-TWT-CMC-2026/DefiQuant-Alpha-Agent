@@ -68,7 +68,10 @@ def main() -> None:
         default=(
             "configs/strategy.aggressive.json,"
             "configs/strategy.balanced.json,"
-            "configs/strategy.defensive.json"
+            "configs/strategy.defensive.json,"
+            "configs/strategy.frontier-risk.json,"
+            "configs/strategy.frontier-return.json,"
+            "configs/strategy.frontier-lowdrawdown.json"
         ),
         help="Comma-separated strategy config paths to compare.",
     )
@@ -141,7 +144,10 @@ def main() -> None:
         default=(
             "configs/strategy.aggressive.json,"
             "configs/strategy.balanced.json,"
-            "configs/strategy.defensive.json"
+            "configs/strategy.defensive.json,"
+            "configs/strategy.frontier-risk.json,"
+            "configs/strategy.frontier-return.json,"
+            "configs/strategy.frontier-lowdrawdown.json"
         ),
         help="Comma-separated strategy config paths for research-report.",
     )
