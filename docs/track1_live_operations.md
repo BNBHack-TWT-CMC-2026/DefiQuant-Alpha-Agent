@@ -62,6 +62,7 @@ Run the read-only alpha decision first:
 uv run defiquant research-report --windows 90,180,365
 uv run defiquant scan-alpha --symbols-source tradable --top 10
 uv run defiquant alpha-evidence --mode auto --top 10
+uv run defiquant submission-evidence --agent-url https://example.com --wallet-address 0x...
 ```
 
 For live-window rehearsal, convert the same latest CMC quote alpha into target
@@ -108,12 +109,13 @@ During `2026-06-22T00:00:00Z` to `2026-06-28T23:59:59Z`:
 2. Run `research-report` and record the robust baseline mode.
 3. Run `scan-alpha` and record the latest quote alpha mode.
 4. Run `alpha-evidence --mode auto` and save the latest quote alpha packet.
-5. Run CMC-backed dry-run execution planning with the selected mode config.
-6. Run TWAK quote validation in dry-run mode.
-7. Check the planned order count and total notional.
-8. If live execution is needed, stop for approval if the cap or command differs
+5. Run `submission-evidence` and save the generated manifest.
+6. Run CMC-backed dry-run execution planning with the selected mode config.
+7. Run TWAK quote validation in dry-run mode.
+8. Check the planned order count and total notional.
+9. If live execution is needed, stop for approval if the cap or command differs
    from the current approved run.
-9. Capture tx hash, command output, UTC/KST timestamp, and daily notes.
+10. Capture tx hash, command output, UTC/KST timestamp, and daily notes.
 
 ## Halt Criteria
 
@@ -145,6 +147,7 @@ artifacts/track1-live/
     preflight.json
     research-report.json
     alpha-evidence.json
+    submission-evidence-manifest.json
     dry-run-plan.json
     quote-validation.json
     live-execution.json

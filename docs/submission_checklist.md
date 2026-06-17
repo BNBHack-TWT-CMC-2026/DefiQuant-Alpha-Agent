@@ -25,6 +25,7 @@
 - Show `alpha-evidence --mode auto` packet with selected mode, target weights, and TWAK dry-run commands.
 - Show `signal --alpha-source latest` and TWAK dry-run execution from the same latest CMC quote alpha.
 - Show `research-report --windows 90,180,365` as the mode robustness evidence.
+- Show `submission-evidence` output manifest and generated evidence directory.
 - Show CMC Agent Hub MCP configuration from `configs/mcp/cmc-mcp.json`.
 - Show CMC Agent Hub read-only context template from `configs/cmc_agent_context.json`.
 - Show generated CMC Agent Hub prompt packet from `uv run defiquant cmc-context-packet`.
@@ -42,6 +43,7 @@
 - Reproducible setup with `uv sync --dev`.
 - Passing CI for Ruff, ty, and pytest.
 - Clear `.env.example` without secrets.
+- Ignored local `artifacts/submission-evidence/` bundle for demo capture.
 
 ## Track 2 Must-Haves
 

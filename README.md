@@ -33,6 +33,7 @@ $env:CMC_API_KEY="your-cmc-api-key"
 uv run defiquant signal --config configs/strategy.json --cmc-days 90
 uv run defiquant backtest --config configs/strategy.json --cmc-days 90 --cmc-end-date 2026-06-12
 uv run defiquant research-report --windows 90,180,365
+uv run defiquant submission-evidence --windows 90,180,365 --agent-url https://example.com --wallet-address 0x...
 ```
 
 When `--fixture` is omitted, the CLI requests daily CMC OHLCV candles for the configured
@@ -76,6 +77,7 @@ uv run defiquant research-report --windows 90,180,365
 uv run defiquant agent-endpoints --config configs/strategy.json --agent-url https://example.com --wallet-address 0x... --network bsc-testnet
 uv run defiquant track1-preflight --run-read-only
 uv run defiquant alpha-evidence --mode auto --portfolio-cash 1000
+uv run defiquant submission-evidence --agent-url https://example.com --wallet-address 0x...
 uv run defiquant execute --config configs/strategy.aggressive.json --alpha-source latest --adapter twak --portfolio twak --validate-quotes --dry-run
 ```
 

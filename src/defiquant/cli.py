@@ -37,6 +37,7 @@ from defiquant.models import MarketData, Order, PortfolioState
 from defiquant.research import build_research_report, validate_research_config_compatibility
 from defiquant.risk import RiskManager
 from defiquant.strategy import MomentumLiquidityStrategy
+from defiquant.submission_evidence import write_submission_evidence_bundle
 from defiquant.tuning import load_risk_tuning_candidates, rank_risk_candidates
 
 LIVE_CONFIRMATION_PHRASE = "I_UNDERSTAND_TWAK_LIVE_SWAP_RISK"
@@ -110,6 +111,39 @@ def main() -> None:
         type=float,
         default=None,
         help="Cash notional for dry-run order sizing; defaults to selected config initial_cash.",
+    )
+
+    submission_evidence = subparsers.add_parser("submission-evidence")
+    submission_evidence.add_argument("--config", default="configs/strategy.json")
+    submission_evidence.add_argument("--modes", default="configs/alpha_modes.json")
+    submission_evidence.add_argument("--mode-config-dir", default="configs")
+    submission_evidence.add_argument("--token-addresses", default=None)
+    submission_evidence.add_argument(
+        "--mode",
+        choices=ALPHA_EVIDENCE_MODES,
+        default="auto",
+        help="Alpha mode for alpha-evidence; auto follows the latest quote scan.",
+    )
+    submission_evidence.add_argument(
+        "--research-configs",
+        default=(
+            "configs/strategy.aggressive.json,"
+            "configs/strategy.balanced.json,"
+            "configs/strategy.defensive.json"
+        ),
+        help="Comma-separated strategy config paths for research-report.",
+    )
+    submission_evidence.add_argument("--windows", default="90,180,365")
+    submission_evidence.add_argument("--top", type=int, default=10)
+    submission_evidence.add_argument("--portfolio-cash", type=float, default=None)
+    submission_evidence.add_argument("--context", default="configs/cmc_agent_context.json")
+    submission_evidence.add_argument("--agent-url", default="")
+    submission_evidence.add_argument("--wallet-address", default="")
+    submission_evidence.add_argument("--output-dir", default="artifacts/submission-evidence")
+    submission_evidence.add_argument("--fixture", action="store_true")
+    submission_evidence.add_argument(
+        "--cmc-end-date",
+        help="Last complete CMC daily candle date to request, formatted as YYYY-MM-DD.",
     )
 
     cmc_context_packet = subparsers.add_parser("cmc-context-packet")
@@ -195,19 +229,7 @@ def main() -> None:
         return
 
     if args.command == "research-report":
-        config_paths = _config_paths(args.configs)
-        configs = {path.stem.removeprefix("strategy."): load_config(path) for path in config_paths}
-        base_config = validate_research_config_compatibility(configs)
-        markets = {
-            days: _load_market(
-                args.fixture,
-                base_config.universe_symbols,
-                cmc_days=days,
-                cmc_end_date=args.cmc_end_date,
-            )
-            for days in _positive_ints(args.windows, label="--windows")
-        }
-        print(json.dumps(build_research_report(configs, markets), indent=2))
+        print(json.dumps(_build_research_report_payload(args), indent=2))
         return
 
     config = load_config(Path(args.config))
@@ -313,36 +335,30 @@ def main() -> None:
         return
 
     if args.command == "alpha-evidence":
-        token_addresses = load_token_addresses(Path(_token_addresses_path(args)))
-        symbols = _alpha_symbols("tradable", config, token_addresses)
-        quotes = load_cmc_latest_quotes(symbols)
-        modes = load_alpha_modes(Path(args.modes))
-        scan = scan_alpha_quotes(
-            quotes,
-            token_addresses=token_addresses,
-            top=max(1, args.top),
-            modes=modes,
-        )
-        selected_mode = choose_alpha_evidence_mode(args.mode, scan)
-        selected_config_path = alpha_mode_config_path(args.mode_config_dir, selected_mode)
-        selected_config = load_config(selected_config_path)
-        print(
-            json.dumps(
-                build_alpha_evidence(
-                    base_config=config,
-                    selected_config=selected_config,
-                    selected_config_path=selected_config_path,
-                    quotes=quotes,
-                    token_addresses=token_addresses,
-                    modes=modes,
-                    requested_mode=args.mode,
-                    selected_mode=selected_mode,
-                    top=max(1, args.top),
-                    portfolio_cash=args.portfolio_cash,
+        print(json.dumps(_build_alpha_evidence_payload(args, config), indent=2))
+        return
+
+    if args.command == "submission-evidence":
+        manifest = write_submission_evidence_bundle(
+            args.output_dir,
+            {
+                "research-report": _build_research_report_payload(
+                    args,
+                    configs_value=args.research_configs,
                 ),
-                indent=2,
-            )
+                "alpha-evidence": _build_alpha_evidence_payload(args, config),
+                "cmc-context-packet": build_cmc_agent_context_packet(
+                    config,
+                    context_path=args.context,
+                ),
+                "agent-profile": build_agent_profile(
+                    config,
+                    agent_url=args.agent_url,
+                    wallet_address=args.wallet_address,
+                ),
+            },
         )
+        print(json.dumps(manifest, indent=2))
         return
 
     if args.command == "cmc-context-packet":
@@ -529,6 +545,57 @@ def _load_market(
         except (OSError, RuntimeError, ValueError) as exc:
             raise SystemExit(f"CMC market loading failed: {exc}") from exc
     return fixture_market(symbols)
+
+
+def _build_research_report_payload(
+    args: argparse.Namespace,
+    *,
+    configs_value: str | None = None,
+) -> dict[str, object]:
+    config_paths = _config_paths(configs_value or args.configs)
+    configs = {path.stem.removeprefix("strategy."): load_config(path) for path in config_paths}
+    base_config = validate_research_config_compatibility(configs)
+    markets = {
+        days: _load_market(
+            args.fixture,
+            base_config.universe_symbols,
+            cmc_days=days,
+            cmc_end_date=args.cmc_end_date,
+        )
+        for days in _positive_ints(args.windows, label="--windows")
+    }
+    return build_research_report(configs, markets)
+
+
+def _build_alpha_evidence_payload(
+    args: argparse.Namespace,
+    config: AppConfig,
+) -> dict[str, object]:
+    token_addresses = load_token_addresses(Path(_token_addresses_path(args)))
+    symbols = _alpha_symbols("tradable", config, token_addresses)
+    quotes = load_cmc_latest_quotes(symbols)
+    modes = load_alpha_modes(Path(args.modes))
+    scan = scan_alpha_quotes(
+        quotes,
+        token_addresses=token_addresses,
+        top=max(1, args.top),
+        modes=modes,
+    )
+    selected_mode = choose_alpha_evidence_mode(args.mode, scan)
+    selected_config_path = alpha_mode_config_path(args.mode_config_dir, selected_mode)
+    selected_config = load_config(selected_config_path)
+    return build_alpha_evidence(
+        base_config=config,
+        selected_config=selected_config,
+        selected_config_path=selected_config_path,
+        quotes=quotes,
+        token_addresses=token_addresses,
+        modes=modes,
+        requested_mode=args.mode,
+        selected_mode=selected_mode,
+        top=max(1, args.top),
+        portfolio_cash=args.portfolio_cash,
+    )
 
 
 def _alpha_symbols(
