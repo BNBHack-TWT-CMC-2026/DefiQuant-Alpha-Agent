@@ -1,0 +1,10 @@
+{
+  "description": "Non-executing 10-minute leveraged volume impulse research strategy.",
+  "seed": 1000.0,
+  "leverage": 20.0,
+  "baseline_window": 12,
+  "volume_spike_multiple": 10.0,
+  "exit_volume_decreases": 3,
+  "fee_bps": 5.0,
+  "slippage_bps": 10.0
+}
