@@ -13,8 +13,7 @@ def write_submission_evidence_bundle(
     generated_at: datetime | None = None,
 ) -> dict[str, Any]:
     timestamp = generated_at or datetime.now(UTC)
-    bundle_dir = Path(output_root) / _timestamp_slug(timestamp)
-    bundle_dir.mkdir(parents=True, exist_ok=False)
+    bundle_dir = _create_bundle_dir(Path(output_root), timestamp)
 
     files: dict[str, str] = {}
     for name, payload in payloads.items():
@@ -53,3 +52,17 @@ def write_submission_evidence_bundle(
 def _timestamp_slug(timestamp: datetime) -> str:
     value = timestamp.astimezone(UTC)
     return value.strftime("%Y%m%dT%H%M%SZ")
+
+
+def _create_bundle_dir(output_root: Path, timestamp: datetime) -> Path:
+    slug = _timestamp_slug(timestamp)
+    output_root.mkdir(parents=True, exist_ok=True)
+    for index in range(1, 1000):
+        suffix = "" if index == 1 else f"-{index}"
+        candidate = output_root / f"{slug}{suffix}"
+        try:
+            candidate.mkdir()
+        except FileExistsError:
+            continue
+        return candidate
+    raise RuntimeError(f"could not allocate submission evidence directory under {output_root}")

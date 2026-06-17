@@ -29,6 +29,17 @@ def test_write_submission_evidence_bundle_creates_manifest(tmp_path: Path) -> No
     assert "paid x402 request" in manifest["manual_gates_not_run"]
 
 
+def test_write_submission_evidence_bundle_handles_timestamp_collision(tmp_path: Path) -> None:
+    timestamp = datetime(2026, 6, 17, 1, 2, 3, tzinfo=UTC)
+
+    first = write_submission_evidence_bundle(tmp_path, {"first": {}}, generated_at=timestamp)
+    second = write_submission_evidence_bundle(tmp_path, {"second": {}}, generated_at=timestamp)
+
+    assert first["bundle_dir"].endswith("20260617T010203Z")
+    assert second["bundle_dir"].endswith("20260617T010203Z-2")
+    assert first["bundle_dir"] != second["bundle_dir"]
+
+
 def test_submission_evidence_cli_writes_safe_bundle(
     monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path,
