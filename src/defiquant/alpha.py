@@ -92,7 +92,7 @@ def latest_quote_signals(
     config: StrategyConfig,
 ) -> list[Signal]:
     rows = [
-        _score_quote(symbol, quote, token_addresses)
+        _score_quote_for_strategy(symbol, quote, token_addresses, config)
         for symbol, quote in quotes.items()
         if symbol.upper() not in STABLE_SYMBOLS and symbol.upper() in token_addresses
     ]
@@ -204,6 +204,65 @@ def _score_quote(
             f"downside_penalty={downside_penalty:.4f}",
         ],
     }
+
+
+def _score_quote_for_strategy(
+    symbol: str,
+    quote: dict[str, Any],
+    token_addresses: dict[str, str],
+    config: StrategyConfig,
+) -> dict[str, Any]:
+    change_1h = _number(quote.get("percent_change_1h")) / 100.0
+    change_24h = _number(quote.get("percent_change_24h")) / 100.0
+    change_7d = _number(quote.get("percent_change_7d")) / 100.0
+    volume_24h = max(0.0, _number(quote.get("volume_24h")))
+    market_cap = max(0.0, _number(quote.get("market_cap")))
+    medium_momentum = change_7d
+    trend_strength = change_24h
+    volume_impulse = min(1.0, log10(volume_24h + 1.0) / 10.0)
+    liquidity_depth = min(1.0, log10(max(volume_24h, market_cap) + 1.0) / 12.0)
+    short_reversal_guard = _latest_reversal_guard(change_1h)
+    volatility_proxy = (abs(change_1h) + abs(change_24h) + (abs(change_7d) / 7.0)) / 10.0
+    downside_penalty = (max(0.0, -change_24h) * 0.70) + (max(0.0, -change_7d) * 0.30)
+    weights = config.alpha_weights
+    alpha_score = (
+        (weights.medium_momentum * medium_momentum)
+        + (weights.trend_strength * trend_strength)
+        + (weights.volume_impulse * volume_impulse)
+        + (weights.liquidity_depth * liquidity_depth)
+        + (weights.short_reversal_guard * short_reversal_guard)
+        - (weights.volatility_penalty * volatility_proxy)
+        - downside_penalty
+    )
+    upper_symbol = symbol.upper()
+    return {
+        "symbol": upper_symbol,
+        "alpha_score": round(alpha_score, 8),
+        "tradable": upper_symbol in token_addresses,
+        "token_address": token_addresses.get(upper_symbol, ""),
+        "price": quote.get("price"),
+        "volume_24h": quote.get("volume_24h"),
+        "market_cap": quote.get("market_cap"),
+        "percent_change_1h": quote.get("percent_change_1h"),
+        "percent_change_24h": quote.get("percent_change_24h"),
+        "percent_change_7d": quote.get("percent_change_7d"),
+        "reasons": [
+            f"medium_momentum={medium_momentum:.4f}",
+            f"trend_strength={trend_strength:.4f}",
+            f"volume_impulse={volume_impulse:.4f}",
+            f"liquidity_depth={liquidity_depth:.4f}",
+            f"short_reversal_guard={short_reversal_guard:.4f}",
+            f"volatility_proxy={volatility_proxy:.4f}",
+            f"downside_penalty={downside_penalty:.4f}",
+        ],
+    }
+
+
+def _latest_reversal_guard(one_hour_return: float) -> float:
+    pullback_bonus = min(0.04, max(0.0, -one_hour_return)) * 0.50
+    blowoff_penalty = max(0.0, one_hour_return - 0.04)
+    crash_penalty = max(0.0, -one_hour_return - 0.08) * 2.00
+    return pullback_bonus - blowoff_penalty - crash_penalty
 
 
 def _recommend_mode(

@@ -24,6 +24,7 @@
 - Show `scan-alpha` latest-quote mode selection and the three reviewed strategy modes.
 - Show `alpha-evidence --mode auto` packet with selected mode, target weights, and TWAK dry-run commands.
 - Show `signal --alpha-source latest` and TWAK dry-run execution from the same latest CMC quote alpha.
+- Show `frontier-evidence --portfolio-cash 1000` comparing frontier configs on the same latest CMC quote snapshot.
 - Show `research-report --windows 90,180,365` as the mode robustness evidence.
 - Show `alpha-lab --max-candidates 1000` as self-improvement search evidence.
 - Show `submission-evidence` output manifest and generated evidence directory.

@@ -48,6 +48,7 @@ uv run defiquant scan-alpha --symbols-source tradable --top 10
 uv run defiquant scan-alpha --symbols-source eligible --top 15
 uv run defiquant signal --config configs/strategy.aggressive.json --alpha-source latest
 uv run defiquant alpha-evidence --mode auto --top 10
+uv run defiquant frontier-evidence --portfolio-cash 1000
 ```
 
 The tradable scan is read-only and recommends `aggressive`, `balanced`, or
@@ -79,6 +80,7 @@ uv run defiquant alpha-lab --windows 90,180,365 --max-candidates 1000 --top 10
 uv run defiquant agent-endpoints --config configs/strategy.json --agent-url https://example.com --wallet-address 0x... --network bsc-testnet
 uv run defiquant track1-preflight --run-read-only
 uv run defiquant alpha-evidence --mode auto --portfolio-cash 1000
+uv run defiquant frontier-evidence --portfolio-cash 1000
 uv run defiquant submission-evidence --agent-url https://example.com --wallet-address 0x...
 uv run defiquant execute --config configs/strategy.aggressive.json --alpha-source latest --adapter twak --portfolio twak --validate-quotes --dry-run
 ```

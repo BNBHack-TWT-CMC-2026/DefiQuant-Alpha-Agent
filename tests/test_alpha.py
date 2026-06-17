@@ -58,6 +58,7 @@ def test_latest_quote_signals_use_positive_tradable_quote_alpha() -> None:
     assert {signal.symbol for signal in signals} == {"CAKE", "LINK"}
     assert abs(sum(signal.target_weight for signal in signals) - 1.0) < 0.000001
     assert "latest_quote_alpha=" in " ".join(signals[0].reasons)
+    assert "medium_momentum=" in " ".join(signals[0].reasons)
 
 
 def test_latest_quote_signals_fall_back_to_stable_when_no_positive_alpha() -> None:
@@ -77,6 +78,31 @@ def test_latest_quote_signals_fall_back_to_stable_when_no_positive_alpha() -> No
     assert signals[0].symbol == "USDT"
     assert signals[0].target_weight == 1.0
     assert signals[0].reasons == ("risk_off=no_positive_latest_quote_scores",)
+
+
+def test_latest_quote_signals_use_strategy_alpha_weights() -> None:
+    risk_config = load_config(Path("configs/strategy.frontier-risk.json")).strategy
+    return_config = load_config(Path("configs/strategy.frontier-return.json")).strategy
+    quotes = {
+        "CAKE": _quote("CAKE", change_1h=0.5, change_24h=3.0, change_7d=8.0),
+        "LINK": _quote("LINK", change_1h=0.1, change_24h=1.0, change_7d=2.0),
+        "USDT": _quote("USDT", change_1h=0.0, change_24h=0.0, change_7d=0.0),
+    }
+
+    risk_signals = latest_quote_signals(
+        quotes,
+        token_addresses={"CAKE": "0xCake", "LINK": "0xLink"},
+        config=risk_config,
+    )
+    return_signals = latest_quote_signals(
+        quotes,
+        token_addresses={"CAKE": "0xCake", "LINK": "0xLink"},
+        config=return_config,
+    )
+
+    assert risk_signals[0].symbol == "CAKE"
+    assert return_signals[0].symbol == "CAKE"
+    assert risk_signals[0].score != return_signals[0].score
 
 
 def test_latest_quote_prices_include_stable_reserve_price() -> None:

@@ -34,6 +34,7 @@ from defiquant.env import env_value
 from defiquant.execution.paper import PaperExecutionAdapter
 from defiquant.execution.twak_cli import TwakCliExecutionAdapter
 from defiquant.execution.twak_portfolio import parse_twak_portfolio
+from defiquant.latest_evidence import build_latest_evidence_comparison
 from defiquant.models import MarketData, Order, PortfolioState
 from defiquant.research import build_research_report, validate_research_config_compatibility
 from defiquant.risk import RiskManager
@@ -127,6 +128,20 @@ def main() -> None:
         default=None,
         help="Cash notional for dry-run order sizing; defaults to selected config initial_cash.",
     )
+
+    frontier_evidence = subparsers.add_parser("frontier-evidence")
+    frontier_evidence.add_argument("--config", default="configs/strategy.json")
+    frontier_evidence.add_argument(
+        "--configs",
+        default=(
+            "configs/strategy.frontier-risk.json,"
+            "configs/strategy.frontier-return.json,"
+            "configs/strategy.frontier-lowdrawdown.json"
+        ),
+        help="Comma-separated frontier strategy config paths to compare.",
+    )
+    frontier_evidence.add_argument("--token-addresses", default=None)
+    frontier_evidence.add_argument("--portfolio-cash", type=float, default=None)
 
     submission_evidence = subparsers.add_parser("submission-evidence")
     submission_evidence.add_argument("--config", default="configs/strategy.json")
@@ -377,6 +392,10 @@ def main() -> None:
 
     if args.command == "alpha-evidence":
         print(json.dumps(_build_alpha_evidence_payload(args, config), indent=2))
+        return
+
+    if args.command == "frontier-evidence":
+        print(json.dumps(_build_frontier_evidence_payload(args, config), indent=2))
         return
 
     if args.command == "submission-evidence":
@@ -635,6 +654,24 @@ def _build_alpha_evidence_payload(
         requested_mode=args.mode,
         selected_mode=selected_mode,
         top=max(1, args.top),
+        portfolio_cash=args.portfolio_cash,
+    )
+
+
+def _build_frontier_evidence_payload(
+    args: argparse.Namespace,
+    config: AppConfig,
+) -> dict[str, object]:
+    token_addresses = load_token_addresses(Path(_token_addresses_path(args)))
+    symbols = _latest_signal_symbols(config, token_addresses)
+    quotes = load_cmc_latest_quotes(symbols)
+    config_paths = _config_paths(args.configs)
+    configs = {path.stem.removeprefix("strategy."): load_config(path) for path in config_paths}
+    return build_latest_evidence_comparison(
+        base_config=config,
+        configs=configs,
+        quotes=quotes,
+        token_addresses=token_addresses,
         portfolio_cash=args.portfolio_cash,
     )
 
