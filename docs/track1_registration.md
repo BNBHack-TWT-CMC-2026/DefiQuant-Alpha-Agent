@@ -3,6 +3,11 @@
 Track 1 registration is an irreversible external action. This runbook keeps the
 safe preparation steps separate from the final live registration.
 
+Competition contract:
+
+- `0x212c61b9b72c95d95bf29cf032f5e5635629aed5`
+- https://bsctrace.com/address/0x212c61b9b72c95d95bf29cf032f5e5635629aed5
+
 ## Safe Preflight
 
 Default mode prints command plans and does not call TWAK:

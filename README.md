@@ -159,14 +159,20 @@ does not replace the default strategy or the non-executing Track 2 Skill path.
 
 ## Competition Rules Captured
 
+- Track 1 competition contract: `0x212c61b9b72c95d95bf29cf032f5e5635629aed5`.
 - Track 1 on-chain registration must happen before `2026-06-22T00:00:00Z`.
 - Track 2 Skill submission is due by the end of the build window on June 21, 2026.
 - Live Track 1 trading runs June 22-28, 2026.
 - Trades count only for the fixed eligible BEP-20 token list in `configs/eligible_tokens.json`.
+- The Stage 1 10-minute volume impulse lane fails closed on symbols outside that list.
 - The default universe intentionally excludes native `BNB`, `XVS`, and `BAKE` because they are not present in the copied eligible list.
 - The agent must trade at least once per day over the 7-day trading week.
 - A wallet with $1 or less at the start of an hourly measurement is treated as having no capital at work for that hour.
 - Drawdown is a hard risk gate; the local default is 20%, below the example 30% disqualification threshold.
+
+Stage 1 fixed research parameters are 10x volume spike threshold, 80x leverage,
+long on rising spike candles, short on falling spike candles, switch on a
+stronger eligible spike, and exit after 3 consecutive volume-decrease candles.
 
 ## Hackathon Work Plan
 

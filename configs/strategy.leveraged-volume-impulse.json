@@ -1,5 +1,7 @@
 {
   "description": "Non-executing 10-minute leveraged volume impulse research strategy.",
+  "eligible_tokens_path": "configs/eligible_tokens.json",
+  "competition_contract_address": "0x212c61b9b72c95d95bf29cf032f5e5635629aed5",
   "seed": 1000.0,
   "leverage": 80.0,
   "baseline_window": 12,

@@ -54,6 +54,21 @@ uv run defiquant signal --config configs/strategy.json --alpha-source latest
 uv run defiquant execute --config configs/strategy.json --alpha-source latest --adapter twak --portfolio twak --validate-quotes --dry-run
 ```
 
+## Stage 1 Volume Impulse Lane
+
+The 10-minute leveraged volume impulse research lane uses the fixed competition
+allowlist in `configs/eligible_tokens.json`. CSV backtests and sweeps fail
+closed when a candle symbol is outside that list; use `--ignore-ineligible` only
+for data-cleaning runs where excluded rows are recorded separately.
+
+Default Stage 1 parameters:
+
+- 10x volume spike threshold,
+- 80x leverage,
+- long on a rising spike candle and short on a falling spike candle,
+- exit after 3 consecutive volume-decrease candles,
+- switch when a stronger eligible spike appears in another symbol or side.
+
 ## Live Trade Command Shape
 
 Run the read-only alpha decision first:

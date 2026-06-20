@@ -9,6 +9,7 @@ from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Any
 
+from defiquant.competition import validate_universe
 from defiquant.indicators import max_drawdown
 
 
@@ -114,12 +115,23 @@ def load_leveraged_volume_config(path: str | Path) -> LeveragedVolumeImpulseConf
     )
 
 
-def load_10m_csv(path: str | Path) -> Market10m:
+def load_10m_csv(
+    path: str | Path,
+    *,
+    eligible_symbols: frozenset[str] | None = None,
+    strict_eligible: bool = True,
+) -> Market10m:
     market: dict[str, list[TenMinuteCandle]] = defaultdict(list)
+    ineligible_symbols: set[str] = set()
     with Path(path).open(newline="", encoding="utf-8") as file:
         for row in csv.DictReader(file):
+            symbol = _canonical_symbol(row["symbol"], eligible_symbols)
+            if eligible_symbols is not None and symbol not in eligible_symbols:
+                ineligible_symbols.add(row["symbol"].strip())
+                if not strict_eligible:
+                    continue
             candle = TenMinuteCandle(
-                symbol=row["symbol"].strip().upper(),
+                symbol=symbol,
                 timestamp=_parse_timestamp(row["timestamp"]),
                 open=float(row["open"]),
                 high=float(row["high"]),
@@ -128,6 +140,10 @@ def load_10m_csv(path: str | Path) -> Market10m:
                 volume=float(row["volume"]),
             )
             market[candle.symbol].append(candle)
+    if ineligible_symbols and strict_eligible:
+        validate_universe(
+            sorted(ineligible_symbols), eligible_symbols or frozenset(), label="10m CSV"
+        )
     return _sort_market(market)
 
 
@@ -657,6 +673,16 @@ def _sort_market(market: dict[str, list[TenMinuteCandle]]) -> Market10m:
         symbol: sorted(candles, key=lambda candle: candle.timestamp)
         for symbol, candles in market.items()
     }
+
+
+def _canonical_symbol(symbol: str, eligible_symbols: frozenset[str] | None) -> str:
+    stripped = symbol.strip()
+    if eligible_symbols is None:
+        return stripped.upper()
+    if stripped in eligible_symbols:
+        return stripped
+    by_upper = {eligible_symbol.upper(): eligible_symbol for eligible_symbol in eligible_symbols}
+    return by_upper.get(stripped.upper(), stripped)
 
 
 def _parse_timestamp(value: str) -> datetime:

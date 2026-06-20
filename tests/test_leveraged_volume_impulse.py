@@ -3,6 +3,8 @@ from __future__ import annotations
 import csv
 from datetime import UTC, datetime, timedelta
 
+import pytest
+
 from defiquant.leveraged_volume_impulse import (
     LeveragedVolumeImpulseConfig,
     TenMinuteCandle,
@@ -47,28 +49,29 @@ def test_strongest_simultaneous_spike_is_selected() -> None:
 
 def test_csv_loader_reads_10m_candles(tmp_path) -> None:
     path = tmp_path / "candles.csv"
-    with path.open("w", newline="", encoding="utf-8") as file:
-        writer = csv.DictWriter(
-            file,
-            fieldnames=["timestamp", "symbol", "open", "high", "low", "close", "volume"],
-        )
-        writer.writeheader()
-        writer.writerow(
-            {
-                "timestamp": "2026-01-01T00:00:00Z",
-                "symbol": "TEST",
-                "open": "1",
-                "high": "1.1",
-                "low": "0.9",
-                "close": "1.05",
-                "volume": "1000",
-            }
-        )
+    _write_10m_csv(path, symbol="TEST")
 
     market = load_10m_csv(path)
 
     assert market["TEST"][0].close == 1.05
     assert market["TEST"][0].timestamp.tzinfo is not None
+
+
+def test_csv_loader_rejects_symbols_outside_competition_allowlist(tmp_path) -> None:
+    path = tmp_path / "candles.csv"
+    _write_10m_csv(path, symbol="BNB")
+
+    with pytest.raises(ValueError, match="outside the competition allowlist"):
+        load_10m_csv(path, eligible_symbols=frozenset({"CAKE"}))
+
+
+def test_csv_loader_maps_symbol_to_allowlist_canonical_case(tmp_path) -> None:
+    path = tmp_path / "candles.csv"
+    _write_10m_csv(path, symbol="babydoge")
+
+    market = load_10m_csv(path, eligible_symbols=frozenset({"BabyDoge"}))
+
+    assert tuple(market) == ("BabyDoge",)
 
 
 def test_config_default_leverage_is_80x(tmp_path) -> None:
@@ -153,3 +156,23 @@ def _market_with_spike(
             )
         )
     return candles
+
+
+def _write_10m_csv(path, *, symbol: str) -> None:
+    with path.open("w", newline="", encoding="utf-8") as file:
+        writer = csv.DictWriter(
+            file,
+            fieldnames=["timestamp", "symbol", "open", "high", "low", "close", "volume"],
+        )
+        writer.writeheader()
+        writer.writerow(
+            {
+                "timestamp": "2026-01-01T00:00:00Z",
+                "symbol": symbol,
+                "open": "1",
+                "high": "1.1",
+                "low": "0.9",
+                "close": "1.05",
+                "volume": "1000",
+            }
+        )

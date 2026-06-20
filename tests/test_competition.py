@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
 import pytest
@@ -35,3 +36,12 @@ def test_invalid_universe_is_rejected() -> None:
 
     with pytest.raises(ValueError, match="outside the competition allowlist"):
         validate_universe(("BNB", "USDT"), eligible)
+
+
+def test_track1_competition_contract_is_recorded() -> None:
+    raw = json.loads((ROOT / "configs" / "live_operations.json").read_text(encoding="utf-8"))
+    contract = raw["competition_contract"]
+
+    assert contract["address"] == "0x212c61b9b72c95d95bf29cf032f5e5635629aed5"
+    assert contract["explorer_url"].endswith(contract["address"])
+    assert contract["registration_command"] == "twak compete register"

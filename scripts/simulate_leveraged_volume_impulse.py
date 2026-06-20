@@ -4,6 +4,7 @@ import argparse
 import json
 from pathlib import Path
 
+from defiquant.competition import load_eligible_symbols
 from defiquant.leveraged_volume_impulse import (
     fixture_10m_market,
     leveraged_sweep_to_jsonable,
@@ -24,6 +25,12 @@ def main() -> None:
     parser.add_argument("--volume-spikes", default="5,8,10,12,15")
     parser.add_argument("--leverages", default="20,30,50,80")
     parser.add_argument("--exit-decreases", default="3")
+    parser.add_argument("--eligible-tokens", default="configs/eligible_tokens.json")
+    parser.add_argument(
+        "--ignore-ineligible",
+        action="store_true",
+        help="Drop CSV rows outside the competition allowlist instead of failing.",
+    )
     parser.add_argument("--top", type=int, default=10)
     args = parser.parse_args()
 
@@ -31,7 +38,14 @@ def main() -> None:
         raise SystemExit("Use --fixture or provide --csv with 10-minute candles")
 
     config = load_leveraged_volume_config(Path(args.config))
-    market = fixture_10m_market() if args.fixture else load_10m_csv(Path(args.csv))
+    if args.fixture:
+        market = fixture_10m_market()
+    else:
+        market = load_10m_csv(
+            Path(args.csv),
+            eligible_symbols=load_eligible_symbols(Path(args.eligible_tokens)),
+            strict_eligible=not args.ignore_ineligible,
+        )
     results = run_leveraged_volume_sweep(
         market,
         config,
