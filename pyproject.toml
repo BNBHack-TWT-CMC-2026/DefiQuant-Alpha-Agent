@@ -35,7 +35,7 @@ testpaths = ["tests"]
 
 [tool.ruff]
 line-length = 100
-src = ["src", "tests"]
+src = ["src", "tests", "parameter", "track1_volume_impulse_lab"]
 target-version = "py314"
 
 [tool.ruff.lint]
@@ -49,7 +49,7 @@ python-version = "3.14"
 root = ["./src", "."]
 
 [tool.ty.src]
-include = ["src", "tests", "track1_volume_impulse_lab"]
+include = ["src", "tests", "track1_volume_impulse_lab", "parameter"]
 
 [tool.ty.terminal]
 output-format = "concise"
