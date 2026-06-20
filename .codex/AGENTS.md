@@ -154,7 +154,7 @@ uv run defiquant execute --fixture --config configs/strategy.json --adapter twak
   `refactor/#issue-description`, `docs/#issue-description`, or
   `chore/#issue-description`.
 - Use Conventional Commits with Korean descriptions, such as
-  `fix: TWAK ?좏겙 二쇱냼 留ㅽ븨 ?곸슜`.
+  `fix: TWAK 토큰 주소 매핑 적용`.
 - Keep one commit to one logical change. Separate docs, behavior, tests, and
   review fixes when they are logically separate.
 - Before each commit, run at least `uv run pytest` and `uv run ruff check`; run
@@ -167,9 +167,9 @@ uv run defiquant execute --fixture --config configs/strategy.json --adapter twak
   review must check correctness, simplicity, tests, silent failures,
   types/data model, and security/operations.
 - Record the actual code review content before any selection or fix work. Post
-  a PR comment titled `肄붾뱶 由щ럭` with Korean section names: `諛쒓껄 ?ы빆`,
-  `?대┛ 吏덈Ц`, `?⑥? ?꾪뿕`, and `寃利?. If no issue is found, explicitly say
-  `諛쒓껄 ?ы빆 ?놁쓬`.
+  a PR comment titled `코드 리뷰` with Korean section names: `발견 사항`,
+  `열린 질문`, `남은 위험`, and `검증`. If no issue is found, explicitly say
+  `발견 사항 없음`.
 - Do not replace the code review content with a selection summary. The
   selection summary is a separate later PR comment.
 - Before applying review fixes, comment on the PR with what feedback is
