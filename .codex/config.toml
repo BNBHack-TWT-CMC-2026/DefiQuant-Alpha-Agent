@@ -1,0 +1,8 @@
+# Project-scoped Codex CLI settings.
+# Personal auth, model choice, and broad permission defaults stay in ~/.codex/config.toml.
+
+project_doc_max_bytes = 32768
+project_doc_fallback_filenames = [".codex/AGENTS.md", ".codex/LOOP.md", "CLAUDE.md"]
+
+[features]
+shell_snapshot = true

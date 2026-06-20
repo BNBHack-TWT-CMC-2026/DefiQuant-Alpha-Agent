@@ -1,0 +1,4 @@
+interface:
+  display_name: "Codex Code Review"
+  short_description: "PR과 diff를 리뷰하고, 발견 사항과 수정 선별을 분리합니다."
+  default_prompt: "현재 PR 또는 diff를 리뷰하고, 발견 사항을 먼저 기록한 뒤 필요하면 수정 선별을 준비하세요."
