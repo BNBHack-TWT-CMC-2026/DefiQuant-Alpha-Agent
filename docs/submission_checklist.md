@@ -26,6 +26,8 @@
 - Show `signal --alpha-source latest` and TWAK dry-run execution from the same latest CMC quote alpha.
 - Show `frontier-evidence --portfolio-cash 1000` comparing frontier configs on the same latest CMC quote snapshot.
 - Show `research-report --windows 90,180,365` as the mode robustness evidence.
+- Show `track1-exposure-sweep --target-windows 100` as the Track 1 MDD and
+  exposure-sizing research evidence.
 - Show `alpha-lab --max-candidates 1000` as self-improvement search evidence.
 - Show `submission-evidence` output manifest and generated evidence directory.
 - Show CMC Agent Hub MCP configuration from `configs/mcp/cmc-mcp.json`.
@@ -62,6 +64,7 @@
 - CMC REST API for deterministic OHLCV backtests.
 - CMC REST API multi-window research report for aggressive/balanced/defensive mode selection.
 - Deterministic alpha-weight self-improvement lab with baseline comparison.
+- Track 1 rolling-window exposure and MDD target sweep for sizing rationale.
 - CMC latest quotes for Track 1 alpha mode selection and live-window target weights.
 - Track 1 alpha evidence packet for current CMC quote alpha and TWAK dry-run command proof.
 - CMC MCP for agent-ready read-only market context.

@@ -40,6 +40,7 @@ from defiquant.research import build_research_report, validate_research_config_c
 from defiquant.risk import RiskManager
 from defiquant.strategy import MomentumLiquidityStrategy
 from defiquant.submission_evidence import write_submission_evidence_bundle
+from defiquant.track1_exposure import build_track1_exposure_sweep
 from defiquant.track2_regime import build_track2_regime_spec
 from defiquant.tuning import load_risk_tuning_candidates, rank_risk_candidates
 
@@ -91,6 +92,22 @@ def main() -> None:
         "--cmc-end-date",
         help="Last complete CMC daily candle date to request, formatted as YYYY-MM-DD.",
     )
+
+    track1_exposure = subparsers.add_parser("track1-exposure-sweep")
+    _add_market_args(track1_exposure)
+    track1_exposure.add_argument(
+        "--multipliers",
+        default="1,1.25,1.5,2,2.5,3,4,5,6,8,10",
+        help="Comma-separated research exposure multipliers to evaluate.",
+    )
+    track1_exposure.add_argument(
+        "--mdd-targets",
+        default="0.10,0.15,0.20,0.24,0.25,0.30",
+        help="Comma-separated target max drawdown candidates.",
+    )
+    track1_exposure.add_argument("--target-windows", type=int, default=100)
+    track1_exposure.add_argument("--window-size-days", type=int, default=30)
+    track1_exposure.add_argument("--hard-drawdown", type=float, default=0.30)
 
     alpha_lab = subparsers.add_parser("alpha-lab")
     alpha_lab.add_argument("--config", default="configs/strategy.defensive.json")
@@ -289,6 +306,32 @@ def main() -> None:
                     markets,
                     max_candidates=args.max_candidates,
                     top=args.top,
+                ),
+                indent=2,
+            )
+        )
+        return
+
+    if args.command == "track1-exposure-sweep":
+        market = _load_market(
+            args.fixture,
+            config.universe_symbols,
+            cmc_days=args.cmc_days,
+            cmc_end_date=args.cmc_end_date,
+        )
+        print(
+            json.dumps(
+                build_track1_exposure_sweep(
+                    config,
+                    market,
+                    exposure_multipliers=_positive_floats(
+                        args.multipliers,
+                        label="--multipliers",
+                    ),
+                    mdd_targets=_positive_floats(args.mdd_targets, label="--mdd-targets"),
+                    target_windows=args.target_windows,
+                    window_size_days=args.window_size_days,
+                    hard_drawdown=args.hard_drawdown,
                 ),
                 indent=2,
             )
@@ -733,6 +776,16 @@ def _positive_ints(value: str, *, label: str) -> tuple[int, ...]:
         raise SystemExit(f"{label} must be comma-separated positive integers") from exc
     if not items or any(item <= 0 for item in items):
         raise SystemExit(f"{label} must include at least one positive integer")
+    return items
+
+
+def _positive_floats(value: str, *, label: str) -> tuple[float, ...]:
+    try:
+        items = tuple(float(item.strip()) for item in value.split(",") if item.strip())
+    except ValueError as exc:
+        raise SystemExit(f"{label} must be comma-separated positive numbers") from exc
+    if not items or any(item <= 0 for item in items):
+        raise SystemExit(f"{label} must include at least one positive number")
     return items
 
 

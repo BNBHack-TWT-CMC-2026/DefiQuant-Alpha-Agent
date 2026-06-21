@@ -33,6 +33,7 @@ $env:CMC_API_KEY="your-cmc-api-key"
 uv run defiquant signal --config configs/strategy.json --cmc-days 90
 uv run defiquant backtest --config configs/strategy.json --cmc-days 90 --cmc-end-date 2026-06-12
 uv run defiquant research-report --windows 90,180,365
+uv run defiquant track1-exposure-sweep --cmc-days 90 --target-windows 100
 uv run defiquant alpha-lab --windows 90,180,365 --max-candidates 1000 --top 10
 uv run defiquant submission-evidence --windows 90,180,365 --agent-url https://example.com --wallet-address 0x...
 ```
@@ -78,6 +79,7 @@ Before funding the Track 1 wallet, run the safe readiness loop:
 ```powershell
 uv run defiquant tune-risk --config configs/strategy.json --candidates configs/risk_tuning.json --cmc-days 90 --top 5
 uv run defiquant research-report --windows 90,180,365
+uv run defiquant track1-exposure-sweep --config configs/strategy.tournament.json --cmc-days 90 --target-windows 100
 uv run defiquant alpha-lab --windows 90,180,365 --max-candidates 1000 --top 10
 uv run defiquant agent-endpoints --config configs/strategy.json --agent-url https://example.com --wallet-address 0x... --network bsc-testnet
 uv run defiquant track1-preflight --run-read-only
@@ -146,6 +148,11 @@ risk-adjusted, minimum-return, average-return, lowest-drawdown, and robustness
 frontiers so candidate promotion is not based on a single overfit score. Each
 candidate also reports positive-return windows, drawdown headroom, and a
 promotable flag for conservative promotion review.
+
+Use `track1-exposure-sweep` to split Track 1 OHLCV history into rolling windows
+and evaluate research-only exposure multipliers together with candidate MDD
+targets. This does not enable leverage in TWAK; it provides evidence for
+position sizing, cash reserve, turnover, and live cap decisions.
 
 Frontier configs from the current lab are available as
 `configs/strategy.frontier-risk.json`, `configs/strategy.frontier-return.json`,
